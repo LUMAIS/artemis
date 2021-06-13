@@ -30,6 +30,7 @@ struct GeneralOptions {
 	bool        LegacyMode;
 
 	std::string stubImagePaths;
+	std::string inputImagePathsMask;
 };
 
 

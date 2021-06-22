@@ -86,6 +86,8 @@ void FlagParser::Parse(int & argc,
 			continue;
 		}
 
+		;
+
 		if ( base::HasPrefix(*a,"--") ) {
 			//simple case, its a longname
 			std::string longName= a->substr(2);
@@ -94,15 +96,19 @@ void FlagParser::Parse(int & argc,
 				ReportUnused(*a);
 				continue;
 			}
+
 			const char * value = "";
 			if ( fi->second->NeedValue() ) {
 				if ( a + 1 == args.cend() ) {
 					throw std::runtime_error("Missing value for '" + fi->second->FullName() + "' flag");
 				}
 				toRemove.push_back((size_t)std::distance(args.cbegin(),a));
-				++a;
+				//++a;
+				a++;
 				value = a->c_str();
 			}
+			
+
 			try {
 				fi->second->ParseArg(value);
 			} catch (const std::exception & e) {

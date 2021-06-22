@@ -44,7 +44,7 @@ void AcquisitionTask::Stop() {
 void AcquisitionTask::Run() {
 	LOG(INFO) << "[AcquisitionTask]:  started";
 	d_grabber->Start();
-	while(d_quit.load() == false ) {
+	while(d_quit.load() == false) {
 		Frame::Ptr f = d_grabber->NextFrame();
 		if ( d_processFrame ) {
 			d_processFrame->QueueFrame(f);

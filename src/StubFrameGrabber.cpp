@@ -51,8 +51,12 @@ StubFrameGrabber::StubFrameGrabber(const std::vector<std::string> & paths,
 	if ( paths.empty() == true ) {
 		throw std::invalid_argument("No paths given to StubFrameGrabber");
 	}
+
 	for ( const auto & p : paths ) {
+
 		d_images.push_back(cv::imread(p,0));
+		LOG(INFO) << "[StubFrameGrabber]: Loading frame "<<p;
+
 		if ( d_images.back().data == NULL ) {
 			throw std::runtime_error("Could not load '" + p + "'");
 		}

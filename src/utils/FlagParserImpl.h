@@ -13,6 +13,9 @@
 #include <limits>
 
 
+#include <iostream>
+
+
 namespace options {
 
 template <typename T>
@@ -77,7 +80,7 @@ inline void FlagParser::AddFlag(const std::string & name,
 	if ( std::is_same<T,bool>::value ) {
 		mandatory = false;
 	}
-
+	
 	CheckFlagName(name,shortName);
 
 	ValueHolderBase::Ptr holder(new ValueHolder<T>(name,description,shortName,value));

@@ -106,18 +106,19 @@ void GeneralOptions::PopulateParser(options::FlagParser & parser) {
 	parser.AddFlag("input-frames", inputImagePathsMask, "Use a suite of input images instead of an actual framegrabber");
 	parser.AddFlag("test-mode",TestMode,"Test mode, adds an overlay detection drawing and statistics");
 	parser.AddFlag("legacy-mode",LegacyMode,"Uses a legacy mode data output for ants cataloging and video output display. The data will be convertible to the data expected by the former Keller's group tracking system");
-
 }
 
 //Example PathsMask "sources/100testimages/t10_smallpopu_*.bmp"
 std::vector<std::string> GetFramesPaths(std::string PathsMask){
-    
+
 	std::vector<std::string> fpaths;
 	std::string::size_type maskPos = PathsMask.rfind('/');
-    if (maskPos != std::string::npos)
+    
+	if (maskPos != std::string::npos)
         ++maskPos;
     else
         maskPos = 0;
+
     std::string path = PathsMask.substr(0,maskPos);
     std::string mask = PathsMask.substr(maskPos);
 
@@ -125,15 +126,16 @@ std::vector<std::string> GetFramesPaths(std::string PathsMask){
     int n;
 
     n = scandir(path.c_str(), &namelist, NULL, alphasort);
+
     if (n < 0)
         perror("scandir");
     else {
         while (n--) {
 
         if (fnmatch(mask.c_str(), namelist[n]->d_name, FNM_CASEFOLD) == 0)
-                fpaths.push_back(path+namelist[n]->d_name);
-                    
-                free(namelist[n]);
+			fpaths.push_back(path+namelist[n]->d_name);
+
+        	free(namelist[n]);
         }
         free(namelist);
     }
@@ -149,6 +151,7 @@ void GeneralOptions::FinishParse() {
 
 	if(inputImagePathsMask.length() > 0)
 		StubImagePaths = GetFramesPaths(inputImagePathsMask);
+	
 }
 
 NetworkOptions::NetworkOptions()

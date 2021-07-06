@@ -34,6 +34,10 @@ typedef std::shared_ptr<FullFrameExportTask> FullFrameExportTaskPtr;
 class ApriltagDetector;
 typedef std::shared_ptr<ApriltagDetector>    ApriltagDetectorPtr;
 
+class LibTorchFeedingDetector;
+typedef std::shared_ptr<LibTorchFeedingDetector>    LibTorchFeedingDetectorPtr;
+
+
 class ProcessFrameTask : public Task{
 public:
 	ProcessFrameTask(const Options & options,
@@ -60,6 +64,8 @@ private :
 	                          bool legacyMode);
 	void SetUpDetection(const cv::Size & inputResolution,
 	                    const ApriltagOptions & options);
+	void SetUpDetectionFeeding(const cv::Size & inputResolution,
+	                    const LibTorchFeedingOptions & options);
 	void SetUpCataloguing(const ProcessOptions & options);
 	void SetUpUserInterface(const cv::Size & workingresolution,
 	                        const cv::Size & fullresolution,
@@ -126,6 +132,8 @@ private :
 	size_t                            d_actualThreads;
 
 	ApriltagDetectorPtr               d_detector;
+
+	LibTorchFeedingDetectorPtr        d_detectorF;
 
 	Time                              d_nextFrameExport;
 	Time                              d_nextAntCatalog;

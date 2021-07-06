@@ -39,7 +39,7 @@ bool Application::InterceptCommand(const Options & options ) {
 	}
 
 	if ( options.General.PrintResolution == true ) {
-		auto resolution = AcquisitionTask::LoadFrameGrabber(options.General.StubImagePaths,
+		auto resolution = AcquisitionTask::LoadFrameGrabber(options.General.StubImagePaths, options.General.inputVideoPath,
 		                                                    options.Camera)->Resolution();
 		std::cout << resolution.width << " " << resolution.height << std::endl;
 		return true;
@@ -87,7 +87,7 @@ Application::Application(const Options & options)
 	: d_signals(d_context,SIGINT)
 	, d_guard(d_context.get_executor()) {
 
-	d_grabber = AcquisitionTask::LoadFrameGrabber(options.General.StubImagePaths,
+	d_grabber = AcquisitionTask::LoadFrameGrabber(options.General.StubImagePaths, options.General.inputVideoPath,
 	                                              options.Camera);
 
 	d_process = std::make_shared<ProcessFrameTask>(options,

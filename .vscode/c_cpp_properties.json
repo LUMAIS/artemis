@@ -1,0 +1,12 @@
+{
+    "configurations": [
+        {
+            "name": "Artemis",
+            "includePath": [
+                "src/ui",
+                "${default}"
+            ]
+        }
+    ],
+    "version": 4
+}

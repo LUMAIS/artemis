@@ -1,5 +1,6 @@
-#include "ApriltagDetector.hpp"
+//it look like ApriltagDetector.cpp
 
+#include "LibTorchFeedingDetector.hpp"
 #include <fort/tags/fort-tags.h>
 
 #include <tbb/parallel_for.h>
@@ -10,17 +11,17 @@
 namespace fort {
 namespace artemis {
 
-ApriltagDetector::ApriltagDetector(size_t maxParallel,
+LibTorchFeedingDetector::LibTorchFeedingDetector(size_t maxParallel,
                                    const cv::Size & size,
-                                   const ApriltagOptions & options) {
-	d_minimumDetectionDistanceSquared = options.QuadMinClusterPixel * options.QuadMinClusterPixel;
+                                   const LibTorchFeedingOptions & options) {
+	d_minimumDetectionDistanceSquared = 100;
 
 	d_detectors.reserve(maxParallel);
 	d_detectors.reserve(maxParallel);
-
+	
 	for ( size_t i = 0 ; i < maxParallel; ++ i ) {
-		d_families.push_back(std::move(CreateFamily(options.Family)));
-		d_detectors.push_back(std::move(CreateDetector(options,d_families.back().get())));
+		//d_families.push_back(std::move(CreateFamily(options.Family)));
+		//d_detectors.push_back(std::move(CreateDetector(options)));//,d_families.back().get())));
 		Partition partition;
 		PartitionRectangle(::cv::Rect(::cv::Point(0,0),size),
 		                   i + 1,
@@ -30,15 +31,21 @@ ApriltagDetector::ApriltagDetector(size_t maxParallel,
 	}
 }
 
-void ApriltagDetector::Detect(const cv::Mat & image,
+void LibTorchFeedingDetector::Detect(const cv::Mat & image,
                               size_t nThreads,
                               hermes::FrameReadout & m) {
+	
+	std::cout<<"LibTorchFeedingDetector | Detect | nThreads - "<<nThreads<<std::endl;
 
 	nThreads = std::min(std::max(nThreads,size_t(1)),d_detectors.size());
 
-	const auto & partition = d_partitions[nThreads-1];
+	//const auto & partition = d_partitions[nThreads-1];
+	const auto & partition = d_partitions[1];
+	
 	auto detections = PartionnedDetection(image,partition);
 	MergeDetection(detections,partition,m);
+
+	/*
 	size_t nQuads = 0;
 	for ( size_t i = 0; i < nThreads; ++i ) {
 		nQuads += d_detectors[i]->nquads;
@@ -47,31 +54,42 @@ void ApriltagDetector::Detect(const cv::Mat & image,
 	for ( auto & d : detections ) {
 		apriltag_detections_destroy(d);
 	}
+	*/
+	
 }
 
 
-std::vector<zarray_t*> ApriltagDetector::PartionnedDetection(const cv::Mat & image,
+std::vector<zarray_t*> LibTorchFeedingDetector::PartionnedDetection(const cv::Mat & image,
                                                              const Partition & partition) {
 
+	std::cout<<"LibTorchFeedingDetector | PartionnedDetection"<<std::endl;														 
 	std::vector<zarray_t*> detections(partition.size(),nullptr);
+	
 	tbb::parallel_for(tbb::blocked_range<size_t>(0,partition.size()),
 	                  [&] ( const tbb::blocked_range<size_t> &  range ) {
-		                  for ( size_t i = range.begin();
-		                        i != range.end();
-		                        ++i ) {
-			                  auto cloned = cv::Mat(image,partition[i]).clone();
+						  
+						
+		                  for ( size_t i = range.begin(); i != range.end(); ++i ) 
+						  {
+			                  //std::cout<<"partition["<<i<<"] - "<<partition[i]<<std::endl;
+							  auto cloned = cv::Mat(image,partition[i]).clone();
+							  
 			                  image_u8 img = { .width = cloned.cols,
 			                                   .height = cloned.rows,
 			                                   .stride = cloned.cols,
 			                                   .buf = cloned.data };
-			                  detections[i] = apriltag_detector_detect(d_detectors[i].get(),&img);
-		                  } 	
+			                  //detections[i] = apriltag_detector_detect(d_detectors[i].get(),&img);
+							  
+		                  }
+						  
 	                  });
 	return detections;
 
 }
 
-double ApriltagDetector::ComputeAngleFromCorner(const apriltag_detection_t *q) {
+
+
+double LibTorchFeedingDetector::ComputeAngleFromCorner(const libtorchfeeding_detection_t *q) {
 
 	Eigen::Vector2d c0(q->p[0][0],q->p[0][1]);
 	Eigen::Vector2d c1(q->p[1][0],q->p[1][1]);
@@ -80,13 +98,11 @@ double ApriltagDetector::ComputeAngleFromCorner(const apriltag_detection_t *q) {
 
 	Eigen::Vector2d delta = (c1 + c2) / 2.0 - (c0 + c3) / 2.0;
 
-
 	return atan2(delta.y(),delta.x());
 }
 
-
 std::tuple<uint32_t,double,double,double>
-ApriltagDetector::ConvertDetection(const apriltag_detection_t * q,
+LibTorchFeedingDetector::ConvertDetection(const libtorchfeeding_detection_t * q,
                                    const cv::Rect & roi) {
 	return {q->id,
 	        q->c[0] + roi.x,
@@ -95,9 +111,10 @@ ApriltagDetector::ConvertDetection(const apriltag_detection_t * q,
 }
 
 
-void ApriltagDetector::MergeDetection(const std::vector<zarray_t*> detections,
+void LibTorchFeedingDetector::MergeDetection(const std::vector<zarray_t*> detections,
                                       const Partition & partition,
                                       hermes::FrameReadout & m) {
+
 	typedef std::vector<Eigen::Vector2d,Eigen::aligned_allocator<Eigen::Vector2d> > Vector2dList;
 
 	typedef std::map<uint32_t,Vector2dList,std::less<uint32_t>,
@@ -105,8 +122,18 @@ void ApriltagDetector::MergeDetection(const std::vector<zarray_t*> detections,
 
 	MapOfPoints points;
 
-	apriltag_detection_t * q;
+	libtorchfeeding_detection_t * q;
 	size_t i = -1;
+
+	const auto & roi = partition[0];
+	const auto & [tagID,x,y,angle] = ConvertDetection(q,roi);
+	auto t = m.add_tags();
+			t->set_id(tagID);
+			t->set_x(1000);
+			t->set_y(1000);
+			t->set_theta(angle);
+
+	/*
 	for ( const auto & localDetections : detections ) {
 		const auto & roi = partition[++i];
 		for ( int j = 0; j < zarray_size(localDetections); ++j) {
@@ -130,10 +157,14 @@ void ApriltagDetector::MergeDetection(const std::vector<zarray_t*> detections,
 			t->set_theta(angle);
 		}
 	}
-
+	*/
+	
 }
 
 
+//////////////////////////////////////////////////////////////////////////
+
+/*
 ApriltagDetector::FamilyPtr ApriltagDetector::CreateFamily(tags::Family family) {
 	typedef std::function<apriltag_family_t*()> FamilyConstructor;
 	typedef std::function<void (apriltag_family_t*)> FamilyDestructor;
@@ -163,10 +194,14 @@ ApriltagDetector::FamilyPtr ApriltagDetector::CreateFamily(tags::Family family) 
 
 	return FamilyPtr(fi->second.first(),fi->second.second);
 }
+*/
 
-ApriltagDetector::DetectorPtr ApriltagDetector::CreateDetector(const ApriltagOptions & options,
-                                                               apriltag_family_t * family) {
-	auto d = apriltag_detector_create();
+LibTorchFeedingDetector::DetectorPtr LibTorchFeedingDetector::CreateDetector(const LibTorchFeedingOptions & options)//,apriltag_family_t * family) 
+{
+	LibTorchFeedingDetector::DetectorPtr d;// = libtorchfeeding_detector_create();
+	d->nthreads = 1;
+
+	/*
 	apriltag_detector_add_family(d,family);
 	d->nthreads = 1;
 	d->quad_decimate = options.QuadDecimate;
@@ -178,9 +213,9 @@ ApriltagDetector::DetectorPtr ApriltagDetector::CreateDetector(const ApriltagOpt
 	d->qtp.critical_rad = options.QuadCriticalRadian;
 	d->qtp.max_line_fit_mse = options.QuadMaxLineMSE;
 	d->qtp.min_white_black_diff = options.QuadMinBWDiff;
-	d->qtp.deglitch = options.QuadDeglitch ? 1 : 0;
+	d->qtp.deglitch = options.QuadDeglitch ? 1 : 0;*/
 
-	return DetectorPtr(d,apriltag_detector_destroy);
+	return d;// DetectorPtr(d);//,libtorchfeeding_detector_destroy);//,apriltag_detector_destroy);
 }
 
 } // namespace artemis

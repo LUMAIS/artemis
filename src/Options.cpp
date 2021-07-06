@@ -104,6 +104,7 @@ void GeneralOptions::PopulateParser(options::FlagParser & parser) {
 	parser.AddFlag("log-output-dir",LogDir,"Directory to put logs in");
 	parser.AddFlag("stub-image-paths", stubImagePaths, "Use a suite of stub images instead of an actual framegrabber");
 	parser.AddFlag("input-frames", inputImagePathsMask, "Use a suite of input images instead of an actual framegrabber");
+	parser.AddFlag("input-video", inputVideoPath, "Use of input video instead of an actual framegrabber");
 	parser.AddFlag("test-mode",TestMode,"Test mode, adds an overlay detection drawing and statistics");
 	parser.AddFlag("legacy-mode",LegacyMode,"Uses a legacy mode data output for ants cataloging and video output display. The data will be convertible to the data expected by the former Keller's group tracking system");
 }
@@ -274,6 +275,19 @@ void ApriltagOptions::FinishParse() {
 	Family = ParseTagFamily(d_family);
 }
 
+LibTorchFeedingOptions::LibTorchFeedingOptions() :
+	 feedingmodel("")
+	, stuboptionone(1.0)
+	, stuboptiontwo(2.0)
+	, stuboptionthree(3.0) {
+ }
+
+ void LibTorchFeedingOptions::PopulateParser(options::FlagParser & parser)  {
+	parser.AddFlag("at-feeding-model",feedingmodel,"The path to the feeding model");
+	parser.AddFlag("at-stub-option-one",stuboptionone,"stub Option one");
+	parser.AddFlag("at-stub-option-two",stuboptiontwo,"Stub Option two");
+	parser.AddFlag("at-stub-option-three",stuboptionthree,"Stub Option three");
+}
 
 void Options::PopulateParser(options::FlagParser & parser)  {
 	General.PopulateParser(parser);
@@ -281,6 +295,7 @@ void Options::PopulateParser(options::FlagParser & parser)  {
 	Network.PopulateParser(parser);
 	VideoOutput.PopulateParser(parser);
 	Apriltag.PopulateParser(parser);
+	LibTorchFeeding.PopulateParser(parser);
 	Camera.PopulateParser(parser);
 	Process.PopulateParser(parser);
 }

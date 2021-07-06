@@ -29,6 +29,7 @@ struct GeneralOptions {
 	bool        TestMode;
 	bool        LegacyMode;
 
+	std::string inputVideoPath;
 	std::string inputImagePathsMask;
 	std::string stubImagePaths;
 };
@@ -91,6 +92,16 @@ private:
 	std::string d_family;
 };
 
+struct LibTorchFeedingOptions {
+	LibTorchFeedingOptions();
+	void PopulateParser( options::FlagParser & parser);
+
+	std::string	feedingmodel;
+	float		stuboptionone;
+	float		stuboptiontwo;
+	float		stuboptionthree;
+};
+
 struct CameraOptions {
 	CameraOptions();
 	void PopulateParser( options::FlagParser & parser);
@@ -129,6 +140,7 @@ struct Options {
 	NetworkOptions     Network;
 	VideoOutputOptions VideoOutput;
 	ApriltagOptions    Apriltag;
+	LibTorchFeedingOptions    LibTorchFeeding;
 	CameraOptions      Camera;
 	ProcessOptions     Process;
 

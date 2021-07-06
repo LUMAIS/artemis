@@ -17,7 +17,7 @@ typedef std::shared_ptr<ProcessFrameTask> ProcessFrameTaskPtr;
 
 class AcquisitionTask : public Task {
 public:
-	static FrameGrabber::Ptr LoadFrameGrabber(const std::vector<std::string> & stubImagePaths,
+	static FrameGrabber::Ptr LoadFrameGrabber(const std::vector<std::string> & stubImagePaths, std::string inputVideoPath,
 	                                          const CameraOptions & options);
 
 	AcquisitionTask(const FrameGrabber::Ptr & grabber,

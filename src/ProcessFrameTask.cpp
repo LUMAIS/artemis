@@ -9,6 +9,7 @@
 
 #include "Connection.hpp"
 #include "ApriltagDetector.hpp"
+#include "LibTorchFeedingDetector.hpp"
 #include "FullFrameExportTask.hpp"
 #include "VideoOutputTask.hpp"
 #include "UserInterfaceTask.hpp"
@@ -29,6 +30,7 @@ ProcessFrameTask::ProcessFrameTask(const Options & options,
 	d_workingResolution = options.VideoOutput.WorkingResolution(inputResolution);
 
 	SetUpDetection(inputResolution,options.Apriltag);
+	SetUpDetectionFeeding(inputResolution,options.LibTorchFeeding);
 	SetUpUserInterface(d_workingResolution,inputResolution,options);
 	SetUpVideoOutputTask(options.VideoOutput,context,options.General.LegacyMode);
 	SetUpCataloguing(options.Process);
@@ -71,14 +73,28 @@ void ProcessFrameTask::SetUpVideoOutputTask(const VideoOutputOptions & options,
 
 void ProcessFrameTask::SetUpDetection(const cv::Size & inputResolution,
                                       const ApriltagOptions & options) {
-	if ( options.Family == tags::Family::Undefined ) {
+	if ( options.Family == tags::Family::Undefined )
+	{
 		return;
 	}
 	d_detector = std::make_unique<ApriltagDetector>(d_maximumThreads,
 	                                                inputResolution,
 	                                                options);
-
 }
+
+void ProcessFrameTask::SetUpDetectionFeeding(const cv::Size & inputResolution,
+                                      const LibTorchFeedingOptions & options) {
+	if ( options.feedingmodel.length() == 0 )
+	{
+		return;
+	}
+	d_detectorF = std::make_unique<LibTorchFeedingDetector>(d_maximumThreads,
+	                                                inputResolution,
+	                                                options);
+	
+}
+
+
 void ProcessFrameTask::SetUpCataloguing(const ProcessOptions & options) {
 	if ( options.NewAntOutputDir.empty() ) {
 		return ;
@@ -263,6 +279,10 @@ void ProcessFrameTask::Detect(const Frame::Ptr & frame,
                               hermes::FrameReadout & m) {
 	if ( d_detector ) {
 		d_detector->Detect(frame->ToCV(),d_actualThreads,m);
+	}
+
+	if ( d_detectorF ) {
+		d_detectorF->Detect(frame->ToCV(),d_actualThreads,m);
 	}
 }
 

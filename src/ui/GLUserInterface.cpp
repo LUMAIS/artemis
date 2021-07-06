@@ -486,6 +486,7 @@ void GLUserInterface::InitGLData() {
 	ComputeProjection(cv::Rect(cv::Point(0,0),d_fullSize),d_fullProjection);
 	ComputeProjection(d_ROI,d_roiProjection);
 	ComputeProjection(cv::Rect(cv::Point(0,0),d_viewSize),d_viewProjection);
+	
 }
 
 void GLUserInterface::ComputeProjection(const cv::Rect & roi, Eigen::Matrix3f & res) {
@@ -622,6 +623,7 @@ void GLUserInterface::DrawPoints(const DrawBuffer & buffer) {
 	if ( d_ROI.size() != d_fullSize ) {
 		factor *= float(d_fullSize.width) / float(d_ROI.width);
 	}
+
 	UploadMatrix(d_pointProgram,"scaleMat",d_roiProjection);
 
 	UploadColor(d_pointProgram,"circleColor",cv::Vec3f(0.0f,1.0f,1.0f));

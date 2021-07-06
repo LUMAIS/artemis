@@ -55,6 +55,7 @@ StubFrameGrabber::StubFrameGrabber(const std::vector<std::string> & paths,
 	for ( const auto & p : paths ) {
 
 		d_images.push_back(cv::imread(p,0));
+
 		LOG(INFO) << "[StubFrameGrabber]: Loading frame "<<p;
 
 		if ( d_images.back().data == NULL ) {
@@ -89,7 +90,13 @@ Frame::Ptr StubFrameGrabber::NextFrame() {
 	Frame::Ptr res = std::make_shared<StubFrame>(d_images[d_ID % d_images.size()],d_ID);
 	d_ID += 1;
 	d_last = res->Time();
+	
 	return res;
+	
+	if(d_ID <= d_images.size()+1)
+		return res;
+	else
+		return nullptr;
 }
 
 } // namespace artemis

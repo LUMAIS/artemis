@@ -65,11 +65,13 @@ set(SRC_FILES utils/Defer.cpp
 	          Options.cpp
 	          FrameGrabber.cpp
 	          StubFrameGrabber.cpp
+			  StubVideoGrabber.cpp
 	          Connection.cpp
 	          Application.cpp
 	          AcquisitionTask.cpp
 	          ProcessFrameTask.cpp
 	          ApriltagDetector.cpp
+			  LibTorchFeedingDetector.cpp
 	          FullFrameExportTask.cpp
 	          UserInterfaceTask.cpp
 	          VideoOutputTask.cpp
@@ -98,10 +100,12 @@ set(HDR_FILES utils/Defer.hpp
 	          Time.hpp
 	          Connection.hpp
 	          StubFrameGrabber.hpp
+			  StubVideoGrabber.hpp
 	          Options.hpp
 	          AcquisitionTask.hpp
 	          ProcessFrameTask.hpp
 	          ApriltagDetector.hpp
+			  LibTorchFeedingDetector.hpp
 	          FullFrameExportTask.hpp
 	          UserInterfaceTask.hpp
 	          VideoOutputTask.hpp

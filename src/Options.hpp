@@ -92,11 +92,11 @@ private:
 	std::string d_family;
 };
 
-struct LibTorchFeedingOptions {
-	LibTorchFeedingOptions();
+struct LibTorchTrophallaxisOptions {
+	LibTorchTrophallaxisOptions();
 	void PopulateParser( options::FlagParser & parser);
 
-	std::string	feedingmodel;
+	std::string	trophallaxismodel;
 	float		stuboptionone;
 	float		stuboptiontwo;
 	float		stuboptionthree;
@@ -140,7 +140,7 @@ struct Options {
 	NetworkOptions     Network;
 	VideoOutputOptions VideoOutput;
 	ApriltagOptions    Apriltag;
-	LibTorchFeedingOptions    LibTorchFeeding;
+	LibTorchTrophallaxisOptions    LibTorchTrophallaxis;
 	CameraOptions      Camera;
 	ProcessOptions     Process;
 

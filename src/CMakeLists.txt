@@ -14,7 +14,6 @@ int main() {
 "
 ARTEMIS_USE_SYSTEM_CATEGORY)
 
-
 configure_file(config.h.in artemis-config.h)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}
 	                ${CMAKE_CURRENT_SOURCE_DIR}
@@ -71,7 +70,7 @@ set(SRC_FILES utils/Defer.cpp
 	          AcquisitionTask.cpp
 	          ProcessFrameTask.cpp
 	          ApriltagDetector.cpp
-			  LibTorchFeedingDetector.cpp
+			  LibTorchTrophallaxisDetector.cpp
 	          FullFrameExportTask.cpp
 	          UserInterfaceTask.cpp
 	          VideoOutputTask.cpp
@@ -105,7 +104,7 @@ set(HDR_FILES utils/Defer.hpp
 	          AcquisitionTask.hpp
 	          ProcessFrameTask.hpp
 	          ApriltagDetector.hpp
-			  LibTorchFeedingDetector.hpp
+			  LibTorchTrophallaxisDetector.hpp
 	          FullFrameExportTask.hpp
 	          UserInterfaceTask.hpp
 	          VideoOutputTask.hpp
@@ -152,6 +151,7 @@ if(EGrabber_FOUND)
 endif(EGrabber_FOUND)
 
 
+
 add_library(artemis-common STATIC ${SRC_FILES} ${HDR_FILES})
 target_link_libraries(artemis-common ${GLOG_LIBRARIES}
 	                                 ${EGRABBER_LIBRARIES}
@@ -166,11 +166,30 @@ target_link_libraries(artemis-common ${GLOG_LIBRARIES}
 	                                 freetype-gl
 	                                 ${FONTCONFIG_LIBRARIES}
 	                                 boost_system
-	                                  "-ldl")
+	                                  "-ldl"
+									)
 
 add_executable(artemis main.cpp)
-
 target_link_libraries(artemis artemis-common)
+
+#list(APPEND CMAKE_PREFIX_PATH "libtorch")
+#find_package(Torch REQUIRED)
+#include_directories(${TORCH_INCLUDE_DIRS})
+
+#add_library(testtorch SHARED testtorch.cpp)
+
+#find_library(testtorch_LIBRARY testtorch PATHS "/home/serhii/artemis/build/src/" NO_DEFAULT_PATH)
+
+#message("CMAKE_CURRENT_SOURCE_DIR - " ${CMAKE_CURRENT_SOURCE_DIR})
+
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")
+#message("Problem TORCH_CXX_FLAGS -> "${TORCH_CXX_FLAGS})
+
+#set_property(TARGET torch PROPERTY CXX_STANDARD 14)
+#target_link_libraries(artemis ${TORCH_LIBRARIES})
+
+
+target_link_libraries(artemis ${TROPHALAXIS_LIBRARIES})
 
 
 add_check_test(NAME artemis

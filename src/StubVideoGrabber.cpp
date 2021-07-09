@@ -90,6 +90,8 @@ StubVideoGrabber::StubVideoGrabber(const std::string & paths,
 StubVideoGrabber::~StubVideoGrabber() {
 }
 
+
+
 void StubVideoGrabber::Start() {
 	d_last = Time::Now().Add(-d_period);
 }

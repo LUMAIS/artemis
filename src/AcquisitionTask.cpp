@@ -22,9 +22,14 @@ FrameGrabber::Ptr AcquisitionTask::LoadFrameGrabber(const std::vector<std::strin
 		return std::make_shared<EuresysFrameGrabber>(egentl,options);
 	} else {
 		if(!stubImagePaths.empty())
+		{
 			return std::make_shared<StubFrameGrabber>(stubImagePaths,options.FPS);
+		}
 		else
+		{
 			return std::make_shared<StubVideoGrabber>(inputVideoPath,options.FPS);
+		}
+			
 	}
 #else
 	return std::make_shared<StubFrameGrabber>(stubImagePaths,options.FPS);
@@ -60,12 +65,15 @@ void AcquisitionTask::Run() {
 			d_processFrame->QueueFrame(f);
 		}
 	}
+
 	LOG(INFO) << "[AcquisitionTask]:  Tear Down";
 	d_grabber->Stop();
 	if (d_processFrame) {
 		d_processFrame->CloseFrameQueue();
 	}
 	LOG(INFO) << "[AcquisitionTask]:  ended";
+	sleep(5);
+	raise(SIGINT);
 }
 
 

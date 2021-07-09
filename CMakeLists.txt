@@ -7,6 +7,7 @@ cmake_minimum_required(VERSION 3.11)
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
+
 include(FetchGoogleTest)
 include(FetchFortTags)
 include(FetchFortHermes)
@@ -14,7 +15,6 @@ include(FetchBoostAsio)
 include(FetchFreetypeGL)
 
 set(CMAKE_CXX_STANDARD 17)
-
 
 option(EURESYS_FRAMEGRABBER_SUPPORT "Add support for Euresys Framegrabber" On)
 option(FORCE_STUB_FRAMEGRABBER_ONLY "Removes support for any other framegraber than stub" Off)
@@ -65,6 +65,7 @@ include_directories(${EGRABBER_INCLUDE_DIRS}
                     ${FORT_HERMES_INCLUDE_DIRS}
                     ${BOOST_ASIO_INCLUDE_DIRS}
 	                ${FREETYPE_GL_INCLUDE_DIRS}
+                    ${TORCH_INCLUDE_DIRS}
 	                )
 
 include(EnableMakeCheck)
@@ -74,3 +75,5 @@ enable_make_check()
 add_subdirectory(scripts)
 
 add_subdirectory(src)
+
+add_subdirectory(src/trophallaxis)

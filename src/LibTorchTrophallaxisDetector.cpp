@@ -1,6 +1,5 @@
 //it look like ApriltagDetector.cpp
-
-#include "LibTorchFeedingDetector.hpp"
+#include "LibTorchTrophallaxisDetector.hpp"
 #include <fort/tags/fort-tags.h>
 
 #include <tbb/parallel_for.h>
@@ -11,9 +10,9 @@
 namespace fort {
 namespace artemis {
 
-LibTorchFeedingDetector::LibTorchFeedingDetector(size_t maxParallel,
+LibTorchTrophallaxisDetector::LibTorchTrophallaxisDetector(size_t maxParallel,
                                    const cv::Size & size,
-                                   const LibTorchFeedingOptions & options) {
+                                   const LibTorchTrophallaxisOptions & options) {
 	d_minimumDetectionDistanceSquared = 100;
 
 	d_detectors.reserve(maxParallel);
@@ -31,11 +30,11 @@ LibTorchFeedingDetector::LibTorchFeedingDetector(size_t maxParallel,
 	}
 }
 
-void LibTorchFeedingDetector::Detect(const cv::Mat & image,
+void LibTorchTrophallaxisDetector::Detect(const cv::Mat & image,
                               size_t nThreads,
                               hermes::FrameReadout & m) {
 	
-	std::cout<<"LibTorchFeedingDetector | Detect | nThreads - "<<nThreads<<std::endl;
+	std::cout<<"LibTorchTrophallaxisDetector | Detect | nThreads - "<<nThreads<<std::endl;
 
 	nThreads = std::min(std::max(nThreads,size_t(1)),d_detectors.size());
 
@@ -59,10 +58,10 @@ void LibTorchFeedingDetector::Detect(const cv::Mat & image,
 }
 
 
-std::vector<zarray_t*> LibTorchFeedingDetector::PartionnedDetection(const cv::Mat & image,
+std::vector<zarray_t*> LibTorchTrophallaxisDetector::PartionnedDetection(const cv::Mat & image,
                                                              const Partition & partition) {
 
-	std::cout<<"LibTorchFeedingDetector | PartionnedDetection"<<std::endl;														 
+	std::cout<<"LibTorchTrophallaxisDetector | PartionnedDetection"<<std::endl;														 
 	std::vector<zarray_t*> detections(partition.size(),nullptr);
 	
 	tbb::parallel_for(tbb::blocked_range<size_t>(0,partition.size()),
@@ -89,7 +88,7 @@ std::vector<zarray_t*> LibTorchFeedingDetector::PartionnedDetection(const cv::Ma
 
 
 
-double LibTorchFeedingDetector::ComputeAngleFromCorner(const libtorchfeeding_detection_t *q) {
+double LibTorchTrophallaxisDetector::ComputeAngleFromCorner(const libtorchtrophallaxis_detection_t *q) {
 
 	Eigen::Vector2d c0(q->p[0][0],q->p[0][1]);
 	Eigen::Vector2d c1(q->p[1][0],q->p[1][1]);
@@ -102,7 +101,7 @@ double LibTorchFeedingDetector::ComputeAngleFromCorner(const libtorchfeeding_det
 }
 
 std::tuple<uint32_t,double,double,double>
-LibTorchFeedingDetector::ConvertDetection(const libtorchfeeding_detection_t * q,
+LibTorchTrophallaxisDetector::ConvertDetection(const libtorchtrophallaxis_detection_t * q,
                                    const cv::Rect & roi) {
 	return {q->id,
 	        q->c[0] + roi.x,
@@ -111,7 +110,7 @@ LibTorchFeedingDetector::ConvertDetection(const libtorchfeeding_detection_t * q,
 }
 
 
-void LibTorchFeedingDetector::MergeDetection(const std::vector<zarray_t*> detections,
+void LibTorchTrophallaxisDetector::MergeDetection(const std::vector<zarray_t*> detections,
                                       const Partition & partition,
                                       hermes::FrameReadout & m) {
 
@@ -122,7 +121,7 @@ void LibTorchFeedingDetector::MergeDetection(const std::vector<zarray_t*> detect
 
 	MapOfPoints points;
 
-	libtorchfeeding_detection_t * q;
+	libtorchtrophallaxis_detection_t * q;
 	size_t i = -1;
 
 	const auto & roi = partition[0];
@@ -196,9 +195,9 @@ ApriltagDetector::FamilyPtr ApriltagDetector::CreateFamily(tags::Family family) 
 }
 */
 
-LibTorchFeedingDetector::DetectorPtr LibTorchFeedingDetector::CreateDetector(const LibTorchFeedingOptions & options)//,apriltag_family_t * family) 
+LibTorchTrophallaxisDetector::DetectorPtr LibTorchTrophallaxisDetector::CreateDetector(const LibTorchTrophallaxisOptions & options)//,apriltag_family_t * family) 
 {
-	LibTorchFeedingDetector::DetectorPtr d;// = libtorchfeeding_detector_create();
+	LibTorchTrophallaxisDetector::DetectorPtr d;// = libtorchtrophallaxis_detector_create();
 	d->nthreads = 1;
 
 	/*
@@ -215,7 +214,7 @@ LibTorchFeedingDetector::DetectorPtr LibTorchFeedingDetector::CreateDetector(con
 	d->qtp.min_white_black_diff = options.QuadMinBWDiff;
 	d->qtp.deglitch = options.QuadDeglitch ? 1 : 0;*/
 
-	return d;// DetectorPtr(d);//,libtorchfeeding_detector_destroy);//,apriltag_detector_destroy);
+	return d;// DetectorPtr(d);//,libtorchtrophallaxis_detector_destroy);//,apriltag_detector_destroy);
 }
 
 } // namespace artemis

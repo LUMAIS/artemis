@@ -275,15 +275,15 @@ void ApriltagOptions::FinishParse() {
 	Family = ParseTagFamily(d_family);
 }
 
-LibTorchFeedingOptions::LibTorchFeedingOptions() :
-	 feedingmodel("")
+LibTorchTrophallaxisOptions::LibTorchTrophallaxisOptions() :
+	 trophallaxismodel("")
 	, stuboptionone(1.0)
 	, stuboptiontwo(2.0)
 	, stuboptionthree(3.0) {
  }
 
- void LibTorchFeedingOptions::PopulateParser(options::FlagParser & parser)  {
-	parser.AddFlag("at-feeding-model",feedingmodel,"The path to the feeding model");
+ void LibTorchTrophallaxisOptions::PopulateParser(options::FlagParser & parser)  {
+	parser.AddFlag("at-trophallaxis-model",trophallaxismodel,"The path to the trophallaxis model");
 	parser.AddFlag("at-stub-option-one",stuboptionone,"stub Option one");
 	parser.AddFlag("at-stub-option-two",stuboptiontwo,"Stub Option two");
 	parser.AddFlag("at-stub-option-three",stuboptionthree,"Stub Option three");
@@ -295,7 +295,7 @@ void Options::PopulateParser(options::FlagParser & parser)  {
 	Network.PopulateParser(parser);
 	VideoOutput.PopulateParser(parser);
 	Apriltag.PopulateParser(parser);
-	LibTorchFeeding.PopulateParser(parser);
+	LibTorchTrophallaxis.PopulateParser(parser);
 	Camera.PopulateParser(parser);
 	Process.PopulateParser(parser);
 }

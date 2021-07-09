@@ -9,7 +9,7 @@
 
 #include "Connection.hpp"
 #include "ApriltagDetector.hpp"
-#include "LibTorchFeedingDetector.hpp"
+#include "LibTorchTrophallaxisDetector.hpp"
 #include "FullFrameExportTask.hpp"
 #include "VideoOutputTask.hpp"
 #include "UserInterfaceTask.hpp"
@@ -30,7 +30,7 @@ ProcessFrameTask::ProcessFrameTask(const Options & options,
 	d_workingResolution = options.VideoOutput.WorkingResolution(inputResolution);
 
 	SetUpDetection(inputResolution,options.Apriltag);
-	SetUpDetectionFeeding(inputResolution,options.LibTorchFeeding);
+	SetUpDetectionTrophallaxis(inputResolution,options.LibTorchTrophallaxis);
 	SetUpUserInterface(d_workingResolution,inputResolution,options);
 	SetUpVideoOutputTask(options.VideoOutput,context,options.General.LegacyMode);
 	SetUpCataloguing(options.Process);
@@ -82,13 +82,13 @@ void ProcessFrameTask::SetUpDetection(const cv::Size & inputResolution,
 	                                                options);
 }
 
-void ProcessFrameTask::SetUpDetectionFeeding(const cv::Size & inputResolution,
-                                      const LibTorchFeedingOptions & options) {
-	if ( options.feedingmodel.length() == 0 )
+void ProcessFrameTask::SetUpDetectionTrophallaxis(const cv::Size & inputResolution,
+                                      const LibTorchTrophallaxisOptions & options) {
+	if ( options.trophallaxismodel.length() == 0 )
 	{
 		return;
 	}
-	d_detectorF = std::make_unique<LibTorchFeedingDetector>(d_maximumThreads,
+	d_detectorF = std::make_unique<LibTorchTrophallaxisDetector>(d_maximumThreads,
 	                                                inputResolution,
 	                                                options);
 	

@@ -35,7 +35,7 @@ fetch_freetype_gl(VERSION 1a8c007f3fe7b1441f9e5616bc23d7455f4b07dd)
 
 
 find_package(GLog REQUIRED)
-find_package(OpenCV REQUIRED core highgui imgproc imgcodecs)
+find_package(OpenCV REQUIRED)# core highgui imgproc imgcodecs)
 find_package(Eigen3 REQUIRED)
 find_package(PkgConfig REQUIRED)
 set(OpenGL_PREFERENCE GLVND)
@@ -65,7 +65,7 @@ include_directories(${EGRABBER_INCLUDE_DIRS}
                     ${FORT_HERMES_INCLUDE_DIRS}
                     ${BOOST_ASIO_INCLUDE_DIRS}
 	                ${FREETYPE_GL_INCLUDE_DIRS}
-                    ${TORCH_INCLUDE_DIRS}
+                    # ${TORCH_INCLUDE_DIRS}
 	                )
 
 include(EnableMakeCheck)
@@ -73,7 +73,8 @@ enable_testing()
 enable_make_check()
 
 add_subdirectory(scripts)
-
 add_subdirectory(src)
 
-add_subdirectory(src/trophallaxis)
+file(COPY data DESTINATION ${PROJECT_BINARY_DIR}/)
+
+#add_subdirectory(src/trophallaxis)

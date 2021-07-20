@@ -92,14 +92,14 @@ private:
 	std::string d_family;
 };
 
-struct LibTorchTrophallaxisOptions {
-	LibTorchTrophallaxisOptions();
+struct TrophallaxisOptions {
+	TrophallaxisOptions();
 	void PopulateParser( options::FlagParser & parser);
 
 	std::string	trophallaxismodel;
-	float		stuboptionone;
-	float		stuboptiontwo;
-	float		stuboptionthree;
+	std::string	labelfile;
+	bool 		useCUDA;
+	size_t		trophallaxisthreads;
 };
 
 struct CameraOptions {
@@ -140,7 +140,7 @@ struct Options {
 	NetworkOptions     Network;
 	VideoOutputOptions VideoOutput;
 	ApriltagOptions    Apriltag;
-	LibTorchTrophallaxisOptions    LibTorchTrophallaxis;
+	TrophallaxisOptions    Trophallaxis;
 	CameraOptions      Camera;
 	ProcessOptions     Process;
 

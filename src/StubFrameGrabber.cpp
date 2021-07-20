@@ -91,12 +91,14 @@ Frame::Ptr StubFrameGrabber::NextFrame() {
 	d_ID += 1;
 	d_last = res->Time();
 	
-	return res;
+	//printf("d_images.size() = %ld | d_ID: %ld\n",d_images.size(), d_ID);
 	
 	if(d_ID <= d_images.size()+1)
 		return res;
 	else
 		return nullptr;
+
+
 }
 
 } // namespace artemis

@@ -275,18 +275,18 @@ void ApriltagOptions::FinishParse() {
 	Family = ParseTagFamily(d_family);
 }
 
-LibTorchTrophallaxisOptions::LibTorchTrophallaxisOptions() :
+TrophallaxisOptions::TrophallaxisOptions() :
 	 trophallaxismodel("")
-	, stuboptionone(1.0)
-	, stuboptiontwo(2.0)
-	, stuboptionthree(3.0) {
+	, labelfile("")
+	, useCUDA(false)
+	, trophallaxisthreads(1) {
  }
 
- void LibTorchTrophallaxisOptions::PopulateParser(options::FlagParser & parser)  {
+ void TrophallaxisOptions::PopulateParser(options::FlagParser & parser)  {
 	parser.AddFlag("at-trophallaxis-model",trophallaxismodel,"The path to the trophallaxis model");
-	parser.AddFlag("at-stub-option-one",stuboptionone,"stub Option one");
-	parser.AddFlag("at-stub-option-two",stuboptiontwo,"Stub Option two");
-	parser.AddFlag("at-stub-option-three",stuboptionthree,"Stub Option three");
+	parser.AddFlag("at-label-file",labelfile,"The path to the label file");
+	parser.AddFlag("at-useCUDA",useCUDA,"Use CUDA?");
+	parser.AddFlag("at-trophallaxis-threads",trophallaxisthreads,"Number of threads for trophallaxis detection");
 }
 
 void Options::PopulateParser(options::FlagParser & parser)  {
@@ -295,7 +295,7 @@ void Options::PopulateParser(options::FlagParser & parser)  {
 	Network.PopulateParser(parser);
 	VideoOutput.PopulateParser(parser);
 	Apriltag.PopulateParser(parser);
-	LibTorchTrophallaxis.PopulateParser(parser);
+	Trophallaxis.PopulateParser(parser);
 	Camera.PopulateParser(parser);
 	Process.PopulateParser(parser);
 }

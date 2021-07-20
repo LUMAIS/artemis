@@ -9,7 +9,7 @@
 
 #include "Connection.hpp"
 #include "ApriltagDetector.hpp"
-#include "LibTorchTrophallaxisDetector.hpp"
+#include "TrophallaxisDetector.hpp"
 #include "FullFrameExportTask.hpp"
 #include "VideoOutputTask.hpp"
 #include "UserInterfaceTask.hpp"
@@ -30,7 +30,7 @@ ProcessFrameTask::ProcessFrameTask(const Options & options,
 	d_workingResolution = options.VideoOutput.WorkingResolution(inputResolution);
 
 	SetUpDetection(inputResolution,options.Apriltag);
-	SetUpDetectionTrophallaxis(inputResolution,options.LibTorchTrophallaxis);
+	SetUpDetectionTrophallaxis(inputResolution,options.Trophallaxis);
 	SetUpUserInterface(d_workingResolution,inputResolution,options);
 	SetUpVideoOutputTask(options.VideoOutput,context,options.General.LegacyMode);
 	SetUpCataloguing(options.Process);
@@ -83,12 +83,12 @@ void ProcessFrameTask::SetUpDetection(const cv::Size & inputResolution,
 }
 
 void ProcessFrameTask::SetUpDetectionTrophallaxis(const cv::Size & inputResolution,
-                                      const LibTorchTrophallaxisOptions & options) {
+                                      const TrophallaxisOptions & options) {
 	if ( options.trophallaxismodel.length() == 0 )
 	{
 		return;
 	}
-	d_detectorF = std::make_unique<LibTorchTrophallaxisDetector>(d_maximumThreads,
+	d_detectorTroph = std::make_unique<TrophallaxisDetector>(d_maximumThreads,
 	                                                inputResolution,
 	                                                options);
 	
@@ -281,8 +281,8 @@ void ProcessFrameTask::Detect(const Frame::Ptr & frame,
 		d_detector->Detect(frame->ToCV(),d_actualThreads,m);
 	}
 
-	if ( d_detectorF ) {
-		d_detectorF->Detect(frame->ToCV(),d_actualThreads,m);
+	if ( d_detectorTroph ) {
+		d_detectorTroph->Detect(frame->ToCV(),m);
 	}
 }
 

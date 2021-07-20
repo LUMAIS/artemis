@@ -34,8 +34,8 @@ typedef std::shared_ptr<FullFrameExportTask> FullFrameExportTaskPtr;
 class ApriltagDetector;
 typedef std::shared_ptr<ApriltagDetector>    ApriltagDetectorPtr;
 
-class LibTorchTrophallaxisDetector;
-typedef std::shared_ptr<LibTorchTrophallaxisDetector>    LibTorchTrophallaxisDetectorPtr;
+class TrophallaxisDetector;
+typedef std::shared_ptr<TrophallaxisDetector>    TrophallaxisDetectorPtr;
 
 
 class ProcessFrameTask : public Task{
@@ -65,7 +65,7 @@ private :
 	void SetUpDetection(const cv::Size & inputResolution,
 	                    const ApriltagOptions & options);
 	void SetUpDetectionTrophallaxis(const cv::Size & inputResolution,
-	                    const LibTorchTrophallaxisOptions & options);
+	                    const TrophallaxisOptions & options);
 	void SetUpCataloguing(const ProcessOptions & options);
 	void SetUpUserInterface(const cv::Size & workingresolution,
 	                        const cv::Size & fullresolution,
@@ -133,7 +133,7 @@ private :
 
 	ApriltagDetectorPtr               d_detector;
 
-	LibTorchTrophallaxisDetectorPtr        d_detectorF;
+	TrophallaxisDetectorPtr        d_detectorTroph;
 
 	Time                              d_nextFrameExport;
 	Time                              d_nextAntCatalog;

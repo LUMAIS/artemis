@@ -15,11 +15,21 @@ int main() {
 ARTEMIS_USE_SYSTEM_CATEGORY)
 
 configure_file(config.h.in artemis-config.h)
+################ONNX RUNTIME################
+set(ONNX_RUNTIME_SESSION_INCLUDE_DIRS trophallaxis/onnxruntime-linux-x64-1.8.1/include/)
+find_path(ONNX_RUNTIME_SESSION_INCLUDE_DIRS onnxruntime_cxx_api.h trophallaxis/onnxruntime-linux-x64-1.8.1/include/)
+find_path(ONNX_RUNTIME_PROVIDERS_INCLUDE_DIRS cuda_provider_factory.h HINTS trophallaxis/onnxruntime-linux-x64-gpu-1.8.1/include/)
+find_library(ONNX_RUNTIME_LIB onnxruntime HINTS trophallaxis/onnxruntime-linux-x64-gpu-1.8.1/lib/)
+############################################
+
 include_directories(${CMAKE_CURRENT_BINARY_DIR}
 	                ${CMAKE_CURRENT_SOURCE_DIR}
+					################ONNX RUNTIME################
+					${ONNX_RUNTIME_SESSION_INCLUDE_DIRS} 
+					${ONNX_RUNTIME_PROVIDERS_INCLUDE_DIRS} 
+					${ONNX_VERSION_CONVERTER_INCLUDE_DIRS}
+					############################################
 	                )
-
-
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/ui/shaders_data.c ${CMAKE_CURRENT_BINARY_DIR}/ui/shaders_data.h
                    COMMAND ${RESOURCIFY_EXECUTABLE} ARGS "-O" ${CMAKE_CURRENT_BINARY_DIR}/ui/shaders_data
@@ -52,8 +62,6 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/fonts/fonts_data.c ${CMAKE
                            ${CMAKE_CURRENT_SOURCE_DIR}/fonts/vga.fon
                            )
 
-
-
 set(SRC_FILES utils/Defer.cpp
 	          utils/PosixCall.cpp
 	          utils/FlagParser.cpp
@@ -70,7 +78,7 @@ set(SRC_FILES utils/Defer.cpp
 	          AcquisitionTask.cpp
 	          ProcessFrameTask.cpp
 	          ApriltagDetector.cpp
-			  LibTorchTrophallaxisDetector.cpp
+			  TrophallaxisDetector.cpp
 	          FullFrameExportTask.cpp
 	          UserInterfaceTask.cpp
 	          VideoOutputTask.cpp
@@ -104,7 +112,7 @@ set(HDR_FILES utils/Defer.hpp
 	          AcquisitionTask.hpp
 	          ProcessFrameTask.hpp
 	          ApriltagDetector.hpp
-			  LibTorchTrophallaxisDetector.hpp
+			  TrophallaxisDetector.hpp
 	          FullFrameExportTask.hpp
 	          UserInterfaceTask.hpp
 	          VideoOutputTask.hpp
@@ -151,6 +159,10 @@ if(EGrabber_FOUND)
 endif(EGrabber_FOUND)
 
 
+#list(APPEND CMAKE_PREFIX_PATH "libtorch")
+#find_package(Torch REQUIRED)
+#include_directories(${TORCH_INCLUDE_DIRS})
+
 
 add_library(artemis-common STATIC ${SRC_FILES} ${HDR_FILES})
 target_link_libraries(artemis-common ${GLOG_LIBRARIES}
@@ -167,29 +179,18 @@ target_link_libraries(artemis-common ${GLOG_LIBRARIES}
 	                                 ${FONTCONFIG_LIBRARIES}
 	                                 boost_system
 	                                  "-ldl"
+									  ${ONNX_RUNTIME_LIB}
 									)
 
-add_executable(artemis main.cpp)
-target_link_libraries(artemis artemis-common)
 
-#list(APPEND CMAKE_PREFIX_PATH "libtorch")
-#find_package(Torch REQUIRED)
-#include_directories(${TORCH_INCLUDE_DIRS})
-
-#add_library(testtorch SHARED testtorch.cpp)
-
-#find_library(testtorch_LIBRARY testtorch PATHS "/home/serhii/artemis/build/src/" NO_DEFAULT_PATH)
-
-#message("CMAKE_CURRENT_SOURCE_DIR - " ${CMAKE_CURRENT_SOURCE_DIR})
-
+#ADD_LIBRARY(mylib SHARED libtesttorch.cpp)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")
-#message("Problem TORCH_CXX_FLAGS -> "${TORCH_CXX_FLAGS})
-
-#set_property(TARGET torch PROPERTY CXX_STANDARD 14)
-#target_link_libraries(artemis ${TORCH_LIBRARIES})
 
 
-target_link_libraries(artemis ${TROPHALAXIS_LIBRARIES})
+ADD_LIBRARY(antdetect SHARED trophallaxis/antdetect.cpp)
+
+add_executable(artemis main.cpp)
+target_link_libraries(artemis artemis-common antdetect)# mylib ${TORCH_LIBRARIES})
 
 
 add_check_test(NAME artemis

@@ -1,0 +1,12 @@
+//#include <torch/torch.h>
+
+#include <torch/torch.h>
+
+#include <iostream>
+
+void testtorch()
+{
+    torch::Tensor tensor = torch::eye(3);
+    std::cout << tensor << std::endl;
+    std::cout<<"testtorch() - !!!"<<std::endl;
+}

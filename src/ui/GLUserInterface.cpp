@@ -235,6 +235,7 @@ void GLUserInterface::UpdateROI(const cv::Rect & ROI) {
 	auto & buffer = d_buffer[d_index];
 	d_ROI = ROI;
 	d_currentPOI = cv::Point(d_ROI.x + + d_ROI.width/2,d_ROI.y + d_ROI.height/2);
+
 	ComputeProjection(d_ROI,d_roiProjection);
 	if ( buffer.FullUploaded == false ) {
 		UploadTexture(buffer);
@@ -433,6 +434,7 @@ void GLUserInterface::InitGLData() {
 	d_frameVBO->Upload(frameData,2,2,0,true);
 
 	glGenTextures(1,&d_frameTexture);
+	
 	glBindTexture(GL_TEXTURE_2D, d_frameTexture);
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);

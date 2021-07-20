@@ -2,6 +2,7 @@
 
 #include "Application.hpp"
 
+
 int main(int argc, char** argv) {
 	try {
 		fort::artemis::Application::Execute(argc,argv);

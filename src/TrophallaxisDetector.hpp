@@ -22,10 +22,6 @@ public :
 				//bool useCUDA,
 	            hermes::FrameReadout & m);
 
-	void testimwrite(cv::Mat image);
-
-	int test = 0;
-
 private:
 
 	std::string	trophallaxismodel;

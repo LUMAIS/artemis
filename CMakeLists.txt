@@ -8,6 +8,7 @@ cmake_minimum_required(VERSION 3.11)
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 
 
+
 include(FetchGoogleTest)
 include(FetchFortTags)
 include(FetchFortHermes)
@@ -76,5 +77,7 @@ add_subdirectory(scripts)
 add_subdirectory(src)
 
 file(COPY data DESTINATION ${PROJECT_BINARY_DIR}/)
+
+
 
 #add_subdirectory(src/trophallaxis)

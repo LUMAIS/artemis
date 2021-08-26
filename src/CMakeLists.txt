@@ -159,9 +159,32 @@ if(EGrabber_FOUND)
 endif(EGrabber_FOUND)
 
 
+#----------------------------libtorch------------------------------------
 #list(APPEND CMAKE_PREFIX_PATH "libtorch")
 #find_package(Torch REQUIRED)
 #include_directories(${TORCH_INCLUDE_DIRS})
+#----------------------------libtorch------------------------------------
+
+#----------------------------libtorch-cxx11-abi------------------------------------
+#list(APPEND CMAKE_PREFIX_PATH "libtorch-cxx11-abi")
+#find_package(Torch REQUIRED)
+#include_directories(${TORCH_INCLUDE_DIRS})
+#message("TORCH_INCLUDE_DIRS ---> " ${TORCH_INCLUDE_DIRS})
+#message("TORCH_LIBRARIES ---> " ${TORCH_LIBRARIES})
+#----------------------------libtorch-cxx11-abi------------------------------------
+
+#----------------------------libtorch-cxx11-abi------------------------------------
+#include_directories("libtorch-cxx11-abi/lib.linux-x86_64-3.7/torch/lib/include")
+#include_directories("libtorch-cxx11-abi/lib.linux-x86_64-3.7/torch/lib/include/torch/csrc/api/include")
+#link_directories("/home/serhii/artemis/src/libtorch-cxx11-abi/lib")
+#link_directories("/home/serhii/artemis/src/libtorch-cxx11-abi/lib.linux-x86_64-3.7/torch/lib")
+#----------------------------libtorch-cxx11-abi------------------------------------
+
+#----------------------------libtorch-test-----------------------------------
+list(APPEND CMAKE_PREFIX_PATH "libtorch")
+find_package(Torch REQUIRED)
+include_directories(${TORCH_INCLUDE_DIRS})
+#----------------------------libtorch-test-----------------------------------
 
 
 add_library(artemis-common STATIC ${SRC_FILES} ${HDR_FILES})
@@ -186,11 +209,10 @@ target_link_libraries(artemis-common ${GLOG_LIBRARIES}
 #ADD_LIBRARY(mylib SHARED libtesttorch.cpp)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")
 
-
 ADD_LIBRARY(antdetect SHARED trophallaxis/antdetect.cpp)
 
 add_executable(artemis main.cpp)
-target_link_libraries(artemis artemis-common antdetect)# mylib ${TORCH_LIBRARIES})
+target_link_libraries(artemis artemis-common antdetect ${TORCH_LIBRARIES})
 
 
 add_check_test(NAME artemis

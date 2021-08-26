@@ -9,6 +9,8 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/opencv.hpp>
 
+#include <torch/torch.h>
+
 #include <chrono>
 #include <cmath>
 #include <exception>
@@ -23,14 +25,6 @@ template <typename T> T vectorProduct(const std::vector<T>& v)
 {
     return accumulate(v.begin(), v.end(), 1, std::multiplies<T>());
 }
-
-/**
- * @brief Operator overloading for printing vectors
- * @tparam T
- * @param os
- * @param v
- * @return std::ostream&
- */
 
 template <typename T> std::ostream& operator<<(std::ostream& os, const std::vector<T>& v)
 {
@@ -47,13 +41,6 @@ template <typename T> std::ostream& operator<<(std::ostream& os, const std::vect
     return os;
 }
 
-/**
- * @brief Print ONNX tensor data type
- * https://github.com/microsoft/onnxruntime/blob/rel-1.6.0/include/onnxruntime/core/session/onnxruntime_c_api.h#L93
- * @param os
- * @param type
- * @return std::ostream&
- */
 std::ostream& operator<<(std::ostream& os, const ONNXTensorElementDataType& type)
 {
     switch (type)
@@ -235,7 +222,7 @@ float detect(cv::Mat imageBGR, std::vector<std::string> labels, Ort::Session &se
     return exp(maxActivation) / expSum;
 }
 
-void drawrec(cv::Mat &image, cv::Point2f p, float d, int koef)
+/*void drawrec(cv::Mat &image, cv::Point2f p, float d, int koef)
 {
 	cv::Point2f p1;
     cv::Point2f p2;
@@ -280,5 +267,7 @@ void drawrec(cv::Mat &image, cv::Point2f p, float d, int koef)
     cv::line(image, p3, p4, cv::Scalar(B, G, R), 2, 8, 0);
     cv::line(image, p4, p1, cv::Scalar(B, G, R), 2, 8, 0);
 }
+*/
+/*std::vector<std::array<float,2>> TDetect(bool useCUDA, std::string modelFilepath, std::string labelFilepath, cv::Mat imageBGR, size_t nThreads);*/
 
-std::vector<std::array<float,2>> TDetect(bool useCUDA, std::string modelFilepath, std::string labelFilepath, cv::Mat imageBGR, size_t nThreads);
+std::vector<cv::Point2f> detectorT (torch::jit::script::Module module, cv::Mat imageBGR, torch::DeviceType device_type);

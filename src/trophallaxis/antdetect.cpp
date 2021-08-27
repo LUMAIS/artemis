@@ -2,8 +2,7 @@
 
 #include <unistd.h>
 
-/*
-std::vector<std::array<float,2>> TDetect(bool useCUDA, std::string modelFilepath, std::string labelFilepath, cv::Mat imageBGR, size_t nThreads)
+/*std::vector<std::array<float,2>> TDetect(bool useCUDA, std::string modelFilepath, std::string labelFilepath, cv::Mat imageBGR, size_t nThreads)
 {
     int koef = 2;
     std::string instanceName{"image-classification-inference"};

@@ -1,5 +1,5 @@
-#include <cuda_provider_factory.h>
-#include <onnxruntime_cxx_api.h>
+//#include <cuda_provider_factory.h>
+//#include <onnxruntime_cxx_api.h>
 
 #include <opencv2/dnn/dnn.hpp>
 #include <opencv2/imgcodecs.hpp>
@@ -41,7 +41,7 @@ template <typename T> std::ostream& operator<<(std::ostream& os, const std::vect
     return os;
 }
 
-std::ostream& operator<<(std::ostream& os, const ONNXTensorElementDataType& type)
+/*std::ostream& operator<<(std::ostream& os, const ONNXTensorElementDataType& type)
 {
     switch (type)
     {
@@ -103,8 +103,8 @@ std::ostream& operator<<(std::ostream& os, const ONNXTensorElementDataType& type
 
     return os;
 }
-
-std::vector<std::string> readLabels(std::string& labelFilepath)
+*/
+/*std::vector<std::string> readLabels(std::string& labelFilepath)
 {
     std::vector<std::string> labels;
     std::string line;
@@ -114,9 +114,8 @@ std::vector<std::string> readLabels(std::string& labelFilepath)
         labels.push_back(line);
     }
     return labels;
-}
-
-float detect(cv::Mat imageBGR, std::vector<std::string> labels, Ort::Session &session)
+}*/
+/*float detect(cv::Mat imageBGR, std::vector<std::string> labels, Ort::Session &session)
 {
 
     Ort::AllocatorWithDefaultOptions allocator;
@@ -221,7 +220,7 @@ float detect(cv::Mat imageBGR, std::vector<std::string> labels, Ort::Session &se
 
     return exp(maxActivation) / expSum;
 }
-
+*/
 /*void drawrec(cv::Mat &image, cv::Point2f p, float d, int koef)
 {
 	cv::Point2f p1;

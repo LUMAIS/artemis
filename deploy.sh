@@ -4,6 +4,27 @@ libtorch_CPU='https://download.pytorch.org/libtorch/cpu/libtorch-cxx11-abi-share
 libtorch_CUDA='https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-shared-with-deps-1.9.0%2Bcu111.zip';
 libtorch_path='src/'
 
+#STEP 1 - Installing build environment for artemis (object detection and tracking) ...
+#sudo apt-get install -y libprotobuf-dev protobuf-compiler libopencv-dev libeigen3-dev libgoogle-glog-dev libglfw3-dev libglew-dev libboost-system-dev
+
+#STEP 2 - Installing CUDA
+#Where ${OS} is ubuntu1804 or ubuntu2004. 
+#wget https://developer.download.nvidia.com/compute/cuda/repos/${OS}/x86_64/cuda-${OS}.pin 
+#sudo mv cuda-${OS}.pin /etc/apt/preferences.d/cuda-repository-pin-600
+#sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/${OS}/x86_64/7fa2af80.pub
+#sudo add-apt-repository "deb https://developer.download.nvidia.com/compute/cuda/repos/${OS}/x86_64/ /"
+#sudo apt-get update
+
+#STEP 3 - Installing cuDNN for Ubuntu 18.04 and 20.04
+#sudo apt-get install libcudnn8=${cudnn_version}-1+${cuda_version}
+#sudo apt-get install libcudnn8-dev=${cudnn_version}-1+${cuda_version}
+#${cudnn_version} is 8.2.4.*
+#${cuda_version} is cuda10.2 or cuda11.4
+
+#STEP 3 - Сreating a folder "data"
+#mkdir data
+
+
 while [ -z "${lcp}" ]
 do
 	echo
@@ -37,7 +58,11 @@ case $lcp in
 	;;
 	2)
 		wget -P /tmp/ $libtorch_CUDA
+<<<<<<< HEAD
         	arch=$(basename $libtorch_CUDA)
+=======
+        arch=$(basename $libtorch_CUDA)
+>>>>>>> 12a461372472f08cfa93bd2792bcdd46828b8d84
 	;;
 	*)
 		:

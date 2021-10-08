@@ -11,6 +11,7 @@
 
 #include <glog/logging.h>
 
+
 namespace fort {
 namespace artemis {
 
@@ -19,6 +20,39 @@ FrameGrabber::Ptr AcquisitionTask::LoadFrameGrabber(const std::vector<std::strin
 #ifndef FORCE_STUB_FRAMEGRABBER_ONLY
 	if (stubImagePaths.empty() && inputVideoPath.length() == 0) {
 		static Euresys::EGenTL egentl;
+
+		//--Serhii--8.10.2021
+		Euresys::gc::TL_HANDLE tl = egentl.tlOpen();
+    	uint32_t numInterfaces = egentl.tlGetNumInterfaces(tl);
+		LOG(INFO) << "[LoadFrameGrabber]:  numInterfaces - "<<numInterfaces;
+
+		for (uint32_t interfaceIndex = 0; interfaceIndex < numInterfaces; interfaceIndex++) 
+		{
+        	std::string interfaceID = egentl.tlGetInterfaceID(tl, interfaceIndex);
+        	Euresys::gc::IF_HANDLE interfaceHandle = egentl.tlOpenInterface(tl, interfaceID);
+        	uint32_t numDevice = egentl.ifGetNumDevices(interfaceHandle);
+
+			for (uint32_t deviceIndex = 0; deviceIndex < numDevice; deviceIndex++) 
+			{
+            	std::string deviceID = egentl.ifGetDeviceID(interfaceHandle, deviceIndex);
+            	Euresys::gc::DEV_HANDLE deviceHandle = egentl.ifOpenDevice(interfaceHandle, deviceID);
+            	
+				try 
+				{
+                	if (egentl.devGetPort(deviceHandle)) 
+					{
+                    	//grabbers.push_back(new MyGrabber(genTL, interfaceIndex, deviceIndex, interfaceID, deviceID));
+						LOG(INFO) << "[LoadFrameGrabber]: Camera connected OK "<<interfaceID<<" <"<<deviceID<<">"<<std::endl;
+                	}
+            	} 
+				catch (const Euresys::gentl_error &) {
+					LOG(INFO) << "[LoadFrameGrabber]: no camera connected on "<<interfaceID<<" <"<<deviceID<<">"<<std::endl;
+            	}
+        	}
+		}
+
+		//--Serhii--8.10.2021
+
 		return std::make_shared<EuresysFrameGrabber>(egentl,options);
 	} else {
 		if(!stubImagePaths.empty())

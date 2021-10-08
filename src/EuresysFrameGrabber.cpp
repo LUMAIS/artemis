@@ -17,6 +17,44 @@ EuresysFrameGrabber::EuresysFrameGrabber(Euresys::EGenTL & gentl,
 
 	using namespace Euresys;
 
+//--Serhii--8.10.2021
+		gc::TL_HANDLE tl = gentl.tlOpen();
+    	uint32_t numInterfaces = gentl.tlGetNumInterfaces(tl);
+		LOG(INFO) << "[LoadFrameGrabber]:  numInterfaces - "<<numInterfaces;
+
+		for (uint32_t interfaceIndex = 0; interfaceIndex < numInterfaces; interfaceIndex++) 
+		{
+        	std::string interfaceID = gentl.tlGetInterfaceID(tl, interfaceIndex);
+        	gc::IF_HANDLE interfaceHandle = gentl.tlOpenInterface(tl, interfaceID);
+        	uint32_t numDevice = gentl.ifGetNumDevices(interfaceHandle);
+
+			numDevice = 1;
+			LOG(INFO) << "[LoadFrameGrabber]:  numDevice - "<<numDevice;
+
+			for (uint32_t deviceIndex = 0; deviceIndex < numDevice; deviceIndex++) 
+			{
+            	std::string deviceID = gentl.ifGetDeviceID(interfaceHandle, deviceIndex);
+            	gc::DEV_HANDLE deviceHandle = gentl.ifOpenDevice(interfaceHandle, deviceID);
+
+            	LOG(INFO) << "[LoadFrameGrabber]:  deviceIndex - "<<deviceIndex;
+
+				try 
+				{
+                	if (gentl.devGetPort(deviceHandle)) 
+					{
+                    	//grabbers.push_back(new MyGrabber(genTL, interfaceIndex, deviceIndex, interfaceID, deviceID));
+						LOG(INFO) << "[LoadFrameGrabber]: Camera connected OK "<<interfaceID<<" <"<<deviceID<<">"<<std::endl;
+                	}
+            	} 
+				catch (const Euresys::gentl_error &) {
+					LOG(INFO) << "[LoadFrameGrabber]: no camera connected on "<<interfaceID<<" <"<<deviceID<<">"<<std::endl;
+            	}
+        	}
+		}
+
+		//--Serhii--8.10.2021
+
+
 	std::string ifID = getString<InterfaceModule>("InterfaceID");
 	std::regex slaveRx("df-camera");
 	bool isMaster = !std::regex_search(ifID,slaveRx) ;

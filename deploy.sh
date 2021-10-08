@@ -33,11 +33,11 @@ arch='';
 case $lcp in
 	1)
 		wget -P /tmp/ $libtorch_CPU
-        arch=$(basename $libtorch_CPU)
+        	arch=$(basename $libtorch_CPU)
 	;;
 	2)
 		wget -P /tmp/ $libtorch_CUDA
-        arch=$(basename $libtorch_CPU)
+        	arch=$(basename $libtorch_CUDA)
 	;;
 	*)
 		:

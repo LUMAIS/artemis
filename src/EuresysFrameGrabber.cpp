@@ -18,6 +18,7 @@ EuresysFrameGrabber::EuresysFrameGrabber(Euresys::EGenTL & gentl,
 	using namespace Euresys;
 
 //--Serhii--8.10.2021
+/*
 		gc::TL_HANDLE tl = gentl.tlOpen();
     	uint32_t numInterfaces = gentl.tlGetNumInterfaces(tl);
 		LOG(INFO) << "[LoadFrameGrabber]:  numInterfaces - "<<numInterfaces;
@@ -28,7 +29,7 @@ EuresysFrameGrabber::EuresysFrameGrabber(Euresys::EGenTL & gentl,
         	gc::IF_HANDLE interfaceHandle = gentl.tlOpenInterface(tl, interfaceID);
         	uint32_t numDevice = gentl.ifGetNumDevices(interfaceHandle);
 
-			numDevice = 1;
+			numDevice = 2;
 			LOG(INFO) << "[LoadFrameGrabber]:  numDevice - "<<numDevice;
 
 			for (uint32_t deviceIndex = 0; deviceIndex < numDevice; deviceIndex++) 
@@ -51,7 +52,7 @@ EuresysFrameGrabber::EuresysFrameGrabber(Euresys::EGenTL & gentl,
             	}
         	}
 		}
-
+			*/
 		//--Serhii--8.10.2021
 
 
@@ -62,6 +63,10 @@ EuresysFrameGrabber::EuresysFrameGrabber(Euresys::EGenTL & gentl,
 	if ( isMaster == true ) {
 		d_width = getInteger<RemoteModule>("Width");
 		d_height = getInteger<RemoteModule>("Height");
+
+		DLOG(INFO) << "Width: "<<d_width;
+		DLOG(INFO) << "Height: "<<d_height;
+
 		DLOG(INFO) << "LineSelector: IOUT11";
 		setString<InterfaceModule>("LineSelector","IOUT11");
 		DLOG(INFO) << "LineInverter: True";
@@ -81,13 +86,15 @@ EuresysFrameGrabber::EuresysFrameGrabber(Euresys::EGenTL & gentl,
 		setString<DeviceModule>("CxpTriggerMessageFormat","Toggle");
 
 		setInteger<DeviceModule>("ExposureTime",6000);
+
 		DLOG(INFO) << "StrobeDuration: " << options.StrobeDuration;
 		setInteger<DeviceModule>("StrobeDuration",options.StrobeDuration.Microseconds());
 
 		DLOG(INFO) << "StrobeDelay: " << options.StrobeDelay;
 		setInteger<DeviceModule>("StrobeDelay",options.StrobeDelay.Microseconds());
 
-		setString<RemoteModule>("ExposureMode","Edge_Triggerred_Programmable");
+		//setString<RemoteModule>("ExposureMode","Edge_Triggerred_Programmable");
+
 	} else {
 		if (options.SlaveWidth == 0 || options.SlaveHeight == 0 ) {
 			throw std::runtime_error("Camera resolution is not specified in DF mode");

@@ -19,7 +19,7 @@ FrameGrabber::Ptr AcquisitionTask::LoadFrameGrabber(const std::vector<std::strin
                                                     const CameraOptions & options) {
 #ifndef FORCE_STUB_FRAMEGRABBER_ONLY
 	if (stubImagePaths.empty() && inputVideoPath.length() == 0) {
-		static Euresys::EGenTL egentl;
+		static Euresys::EGenTL egentl;		
 		return std::make_shared<EuresysFrameGrabber>(egentl,options);
 	} else {
 		if(!stubImagePaths.empty())

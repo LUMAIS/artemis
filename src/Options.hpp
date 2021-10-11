@@ -112,6 +112,7 @@ struct CameraOptions {
 	Duration  StrobeDelay;
 	size_t    SlaveWidth;
 	size_t    SlaveHeight;
+	std::string cameraID;
 private:
 	std::string d_strobeDuration,d_strobeDelay;
 };

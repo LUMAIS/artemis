@@ -17,7 +17,8 @@ EuresysFrameGrabber::EuresysFrameGrabber(Euresys::EGenTL & gentl,
 
 	using namespace Euresys;
 
-//--Serhii--8.10.2021
+	//--Serhii--8.10.2021
+	/*
 		gc::TL_HANDLE tl = gentl.tlOpen();
     	uint32_t numInterfaces = gentl.tlGetNumInterfaces(tl);
 		LOG(INFO) << "[LoadFrameGrabber]:  numInterfaces - "<<numInterfaces;
@@ -51,13 +52,11 @@ EuresysFrameGrabber::EuresysFrameGrabber(Euresys::EGenTL & gentl,
             	}
         	}
 		}
-
-		//--Serhii--8.10.2021
-
+	//--Serhii--8.10.2021*/
 
 	std::string ifID = getString<InterfaceModule>("InterfaceID");
 	std::regex slaveRx("df-camera");
-	bool isMaster = !std::regex_search(ifID,slaveRx) ;
+	bool isMaster = !std::regex_search(ifID,slaveRx);
 
 	if ( isMaster == true ) {
 		d_width = getInteger<RemoteModule>("Width");
@@ -66,8 +65,21 @@ EuresysFrameGrabber::EuresysFrameGrabber(Euresys::EGenTL & gentl,
 		setString<InterfaceModule>("LineSelector","IOUT11");
 		DLOG(INFO) << "LineInverter: True";
 		setString<InterfaceModule>("LineInverter","True");
-		DLOG(INFO) << "LineSource: Device0Strobe";
-		setString<InterfaceModule>("LineSource","Device0Strobe");
+
+		std::string DeviceIDstr = "Device0Strobe";
+		if(!options.cameraID.empty())
+		{
+
+			if(std::stoi(options.cameraID) > -1)
+				DeviceIDstr = "Device" + options.cameraID + "Strobe";
+			
+		}
+
+		DLOG(INFO) << DeviceIDstr;
+		setString<InterfaceModule>("LineSource",DeviceIDstr);
+
+		//DLOG(INFO) << "LineSource: Device0Strobe";
+		//setString<InterfaceModule>("LineSource","Device0Strobe");
 
 		DLOG(INFO) << "CameraControlMethod: RC";
 		setString<DeviceModule>("CameraControlMethod","RC");
@@ -87,7 +99,8 @@ EuresysFrameGrabber::EuresysFrameGrabber(Euresys::EGenTL & gentl,
 		DLOG(INFO) << "StrobeDelay: " << options.StrobeDelay;
 		setInteger<DeviceModule>("StrobeDelay",options.StrobeDelay.Microseconds());
 
-		setString<RemoteModule>("ExposureMode","Edge_Triggerred_Programmable");
+		//Serhii--9.10.2021 setString<RemoteModule>("ExposureMode","Edge_Triggerred_Programmable");
+
 	} else {
 		if (options.SlaveWidth == 0 || options.SlaveHeight == 0 ) {
 			throw std::runtime_error("Camera resolution is not specified in DF mode");

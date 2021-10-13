@@ -3,6 +3,7 @@
 #include <opencv2/core/core.hpp>
 
 #include "FrameGrabber.hpp"
+#include "Options.hpp"
 
 namespace fort {
 namespace artemis {
@@ -29,7 +30,7 @@ private :
 class StubVideoGrabber : public FrameGrabber {
 public :
 	StubVideoGrabber(const std::string & paths,
-	                 double FPS);
+	                 const CameraOptions & options);//double FPS);
 
 	virtual ~StubVideoGrabber();
 
@@ -45,6 +46,8 @@ private:
 	uint64_t             d_ID,d_timestamp;
 	Time                 d_last;
 	Duration             d_period;
+	std::string			 d_cameraid;
+	int32_t				 d_renderheight;
 };
 
 

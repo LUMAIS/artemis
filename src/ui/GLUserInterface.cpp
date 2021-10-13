@@ -18,6 +18,12 @@
 
 #include "../Utils.hpp"
 
+//-----------------------------
+#include <opencv2/imgproc.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/highgui.hpp> 
+//-----------------------------
+
 #if (GLFW_VERSION_MAJOR * 100 + GLFW_VERSION_MINOR) < 303
 #define IMPLEMENT_GLFW_GET_ERROR 1
 #endif
@@ -310,14 +316,17 @@ void GLUserInterface::UpdateFrame(const FrameToDisplay & frame,
                                   const DataToDisplay & data)  {
 	auto & buffer = d_buffer[d_index];
 	buffer.Frame = frame;
+
 	buffer.Data = data;
 	if ( !frame.Message ) {
 		buffer.TrackingSize = cv::Size(0,0);
 	} else {
 		buffer.TrackingSize = cv::Size(frame.Message->width(),frame.Message->height());
 	}
+	
 	d_index = (d_index + 1 ) % 2;
 	Draw();
+	
 }
 
 void GLUserInterface::ComputeViewport() {
@@ -381,6 +390,7 @@ void GLUserInterface::InitPBOs() {
 void GLUserInterface::UploadTexture(DrawBuffer & buffer) {
 	std::shared_ptr<cv::Mat> toUpload = buffer.Frame.Full;
 	buffer.FullUploaded = true;
+
 	if ( buffer.Frame.Zoomed
 	     && d_ROI == buffer.Frame.CurrentROI ) {
 		toUpload = buffer.Frame.Zoomed;
@@ -498,8 +508,8 @@ void GLUserInterface::ComputeProjection(const cv::Rect & roi, Eigen::Matrix3f & 
 		0.0f                   ,  0.0f                     ,  1.0f;
 }
 
-
 void GLUserInterface::DrawMovieFrame(const DrawBuffer & buffer) {
+	
 	glUseProgram(d_frameProgram);
 
 	if ( d_ROI == buffer.Frame.CurrentROI ) {
@@ -509,16 +519,33 @@ void GLUserInterface::DrawMovieFrame(const DrawBuffer & buffer) {
 		UploadMatrix(d_frameProgram,"scaleMat",d_roiProjection);
 	}
 
-
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D,d_frameTexture);
 	//	glUniform1i(d_frameTexture, 0);
-
+	
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER,buffer.PBO);
 	glTexImage2D(GL_TEXTURE_2D,0,GL_R8,d_workingSize.width,d_workingSize.height,0,GL_RED,GL_UNSIGNED_BYTE,0);
 	glBindBuffer(GL_PIXEL_UNPACK_BUFFER,0);
 
 	d_frameVBO->Render(GL_TRIANGLES);
+}
+
+void GLUserInterface::DrawMovieFrameOpenCV(const DrawBuffer & buffer) {
+	
+	cv::Mat Drawframe;
+    if(buffer.Frame.RenderHeight != buffer.Frame.Full->cols)
+	{
+		float k = 1.0*buffer.Frame.Full->cols/buffer.Frame.RenderHeight;
+		size_t RenderWith = buffer.Frame.Full->rows*1.0/k;
+
+		resize(*buffer.Frame.Full,Drawframe, cv::Size(buffer.Frame.RenderHeight, RenderWith), cv::INTER_LINEAR);
+	}
+	else
+		Drawframe = *buffer.Frame.Full;
+	
+
+	cv::imshow("Camera" + buffer.Frame.CameraID, Drawframe);
+   	cv::waitKey(100);
 }
 
 std::string FormatTagID(uint32_t tagID) {
@@ -729,6 +756,7 @@ void GLUserInterface::Draw(const DrawBuffer & buffer ) {
 	glClear( GL_COLOR_BUFFER_BIT);
 
 	DrawMovieFrame(buffer);
+	DrawMovieFrameOpenCV(buffer);
 	DrawPoints(buffer);
 	DrawROI(buffer);
 	DrawLabels(buffer);

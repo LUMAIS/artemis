@@ -11,9 +11,11 @@
 namespace fort {
 namespace artemis {
 
-StubFrame::StubFrame(const cv::Mat & mat, uint64_t ID)
+StubFrame::StubFrame(const cv::Mat & mat, uint64_t ID, std::string CameraID, size_t RenderHeight)
 	: d_mat(mat.clone())
-	, d_ID(ID) {
+	, d_ID(ID)
+	, d_cameraid(CameraID)
+	, d_renderheight(RenderHeight){
 }
 
 StubFrame::~StubFrame() {}
@@ -30,6 +32,14 @@ size_t StubFrame::Height() const {
 	return d_mat.rows;
 }
 
+std::string StubFrame::CameraID() const {
+	return d_cameraid;
+}
+
+size_t StubFrame::RenderHeight() const {
+	return d_renderheight;
+}
+
 uint64_t StubFrame::Timestamp() const {
 	return Time().MonotonicValue() / 1000;
 }
@@ -44,10 +54,13 @@ const cv::Mat & StubFrame::ToCV() {
 
 
 StubFrameGrabber::StubFrameGrabber(const std::vector<std::string> & paths,
-                                   double FPS)
+                                 const CameraOptions & options)  //double FPS)
 	: d_ID(0)
 	, d_timestamp(0)
-	, d_period(1.0e9 / FPS) {
+	, d_period(1.0e9 / options.FPS)
+	, d_cameraid(options.cameraID) 
+	, d_renderheight(options.RenderHeight) {
+
 	if ( paths.empty() == true ) {
 		throw std::invalid_argument("No paths given to StubFrameGrabber");
 	}
@@ -87,7 +100,7 @@ Frame::Ptr StubFrameGrabber::NextFrame() {
 		usleep(toWait.Microseconds());
 	}
 
-	Frame::Ptr res = std::make_shared<StubFrame>(d_images[d_ID % d_images.size()],d_ID);
+	Frame::Ptr res = std::make_shared<StubFrame>(d_images[d_ID % d_images.size()],d_ID,d_cameraid,d_renderheight);
 	d_ID += 1;
 	d_last = res->Time();
 	

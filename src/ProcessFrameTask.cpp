@@ -4,6 +4,7 @@
 
 #include <opencv2/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
+#include <opencv2/highgui.hpp> 
 
 #include <artemis-config.h>
 
@@ -163,9 +164,28 @@ void ProcessFrameTask::Run() {
 	d_start = Time::Now();
 	for (;;) {
 		d_frameQueue.pop(frame);
+
 		if ( !frame ) {
 			break;
 		}
+
+		//--Serhii--12.10.2021--
+		//cv::Mat testframe = frame->ToCV();
+
+		LOG(INFO) << "[ProcessFrameTask]: frame->cols - " <<frame->Width();
+
+    	//cv::Mat resized_frame;
+		
+    	//resize(testframe, frame->ToCV(), cv::Size(frame->Width(), frame->Height()), cv::INTER_LINEAR);
+
+		//resize(testframe, frame->ToCV(), cv::Size(790, 543), cv::INTER_LINEAR);
+    	//imgpath = "img_"+interfaceId+"_"+deviceId+".bmp";
+    	//cv::imwrite(imgpath, resized_frame);
+    	//cv::imwrite("test_b.bmp", testframe);
+    	//cv::imshow("Test Frame", resized_frame);
+   		//cv::waitKey(1000);
+		//--Serhii--12.10.2021--
+
 
 		if ( d_fullFrameExport && d_fullFrameExport->IsFree() ) {
 			d_actualThreads = d_maximumThreads;
@@ -366,9 +386,7 @@ void ProcessFrameTask::DisplayFrame(const Frame::Ptr frame,
                                     const std::shared_ptr<hermes::FrameReadout> & m) {
 
 	d_wantedROI = d_userInterface->UpdateROI(d_wantedROI);
-
 	std::shared_ptr<cv::Mat> zoomed;
-
 	if ( d_wantedROI.size() != frame->ToCV().size() ) {
 		zoomed = d_grayImagePool.Get();
 		cv::Size size = frame->ToCV().size();
@@ -376,6 +394,17 @@ void ProcessFrameTask::DisplayFrame(const Frame::Ptr frame,
 		           *zoomed,d_workingResolution,
 		           0,0,cv::INTER_NEAREST);
 	}
+
+	
+
+	size_t RenderHeight;
+
+	if(frame->RenderHeight() > frame->Height() || frame->RenderHeight() < 0)
+		RenderHeight = frame->Height();
+	else
+		RenderHeight =  frame->RenderHeight();
+
+	//DLOG(INFO) << "[ProcessFrameTask]: RenderHeight - "<<RenderHeight;
 
 	UserInterface::FrameToDisplay toDisplay =
 		{.Full = d_downscaled,
@@ -388,6 +417,8 @@ void ProcessFrameTask::DisplayFrame(const Frame::Ptr frame,
 		 .FrameDropped = d_frameDropped,
 		 .VideoOutputProcessed = -1UL,
 		 .VideoOutputDropped = -1UL,
+		 .CameraID = frame->CameraID(),
+		 .RenderHeight = RenderHeight,
 		};
 
 	if ( d_videoOutput != nullptr ) {

@@ -113,6 +113,7 @@ struct CameraOptions {
 	size_t    SlaveWidth;
 	size_t    SlaveHeight;
 	std::string cameraID;
+	size_t		RenderHeight;
 private:
 	std::string d_strobeDuration,d_strobeDelay;
 };

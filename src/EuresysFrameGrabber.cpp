@@ -13,7 +13,9 @@ EuresysFrameGrabber::EuresysFrameGrabber(Euresys::EGenTL & gentl,
 	, d_lastFrame(0)
 	, d_toAdd(0)
 	, d_width(0)
-	, d_height(0) {
+	, d_height(0) 
+	, d_cameraid(0)
+	, d_renderheight(0){
 
 	using namespace Euresys;
 
@@ -61,6 +63,10 @@ EuresysFrameGrabber::EuresysFrameGrabber(Euresys::EGenTL & gentl,
 	if ( isMaster == true ) {
 		d_width = getInteger<RemoteModule>("Width");
 		d_height = getInteger<RemoteModule>("Height");
+
+		DLOG(INFO) << "Width: "<<d_width;
+		DLOG(INFO) << "Height: "<<d_height;
+
 		DLOG(INFO) << "LineSelector: IOUT11";
 		setString<InterfaceModule>("LineSelector","IOUT11");
 		DLOG(INFO) << "LineInverter: True";
@@ -69,10 +75,12 @@ EuresysFrameGrabber::EuresysFrameGrabber(Euresys::EGenTL & gentl,
 		std::string DeviceIDstr = "Device0Strobe";
 		if(!options.cameraID.empty())
 		{
-
-			if(std::stoi(options.cameraID) > -1)
-				DeviceIDstr = "Device" + options.cameraID + "Strobe";
 			
+			if(std::stoi(options.cameraID) > -1)
+			{
+				DeviceIDstr = "Device" + options.cameraID + "Strobe";
+				d_cameraid = options.cameraID;
+			}
 		}
 
 		DLOG(INFO) << DeviceIDstr;
@@ -111,8 +119,17 @@ EuresysFrameGrabber::EuresysFrameGrabber(Euresys::EGenTL & gentl,
 		d_width = options.SlaveWidth;
 		d_height = options.SlaveHeight;
 	}
+	
+	d_renderheight = d_height;
 
+	if(!options.cameraID.empty())
+	{
+		if(options.RenderHeight > 0)
+			d_renderheight = options.RenderHeight;
+	
+	}
 
+	
 	DLOG(INFO) << "Enable Event";
 	enableEvent<NewBufferData>();
 	DLOG(INFO) << "Realloc Buffer";
@@ -127,7 +144,7 @@ void EuresysFrameGrabber::Start() {
 void EuresysFrameGrabber::Stop() {
 	DLOG(INFO) << "Stopping framegrabber";
 	stop();
-	DLOG(INFO) << "Framegrabber stopped";
+	DLOG(INFO) << "/*Framegrabber stopped";
 }
 
 
@@ -174,6 +191,14 @@ size_t EuresysFrame::Height() const {
 	return d_height;
 }
 
+std::string EuresysFrame::CameraID() const {
+	return d_cameraid;
+}
+
+size_t EuresysFrame::RenderHeight() const {
+	return d_renderheight;
+}
+
 uint64_t EuresysFrame::Timestamp() const {
 	return d_timestamp;
 }
@@ -187,6 +212,7 @@ const cv::Mat & EuresysFrame::ToCV() {
 }
 
 void * EuresysFrame::Data() {
+
 	return getInfo<void*>(GenTL::BUFFER_INFO_BASE);
 }
 

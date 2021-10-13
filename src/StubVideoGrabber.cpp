@@ -44,10 +44,12 @@ std::string type2str(int type) {
 */
 
 StubVideoGrabber::StubVideoGrabber(const std::string & paths,
-                                   double FPS)
+                                   const CameraOptions & options)//double FPS)
 	: d_ID(0)
 	, d_timestamp(0)
-	, d_period(1.0e9 / FPS) {
+	, d_period(1.0e9 / options.FPS)
+	, d_cameraid(options.cameraID) 
+	, d_renderheight(options.RenderHeight){
 	if ( paths.empty() == true ) {
 		throw std::invalid_argument("No path given to StubVideoGrabber");
 	}
@@ -66,7 +68,6 @@ StubVideoGrabber::StubVideoGrabber(const std::string & paths,
 		{
         	cap.set(cv::CAP_PROP_POS_FRAMES, frame_count);
           	
-
           	if (!cap.read(framebuf)) {
 				LOG(INFO) << "[StubVideoGrabber]: Failed to extract the frame "<<frame_count;
           	}
@@ -91,7 +92,6 @@ StubVideoGrabber::~StubVideoGrabber() {
 }
 
 
-
 void StubVideoGrabber::Start() {
 	d_last = Time::Now().Add(-d_period);
 }
@@ -109,7 +109,7 @@ Frame::Ptr StubVideoGrabber::NextFrame() {
 		usleep(toWait.Microseconds());
 	}
 
-	Frame::Ptr res = std::make_shared<StubFrame>(d_images[d_ID % d_images.size()],d_ID);
+	Frame::Ptr res = std::make_shared<StubFrame>(d_images[d_ID % d_images.size()],d_ID,d_cameraid,d_renderheight);
 
 	d_ID += 1;
 	d_last = res->Time();

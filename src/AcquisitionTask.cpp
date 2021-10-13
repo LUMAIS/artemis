@@ -24,11 +24,13 @@ FrameGrabber::Ptr AcquisitionTask::LoadFrameGrabber(const std::vector<std::strin
 	} else {
 		if(!stubImagePaths.empty())
 		{
-			return std::make_shared<StubFrameGrabber>(stubImagePaths,options.FPS);
+			//return std::make_shared<StubFrameGrabber>(stubImagePaths,options.FPS);
+			return std::make_shared<StubFrameGrabber>(stubImagePaths,options);
 		}
 		else
 		{
-			return std::make_shared<StubVideoGrabber>(inputVideoPath,options.FPS);
+			//return std::make_shared<StubVideoGrabber>(inputVideoPath,options.FPS);
+			return std::make_shared<StubVideoGrabber>(inputVideoPath,options);
 		}
 			
 	}

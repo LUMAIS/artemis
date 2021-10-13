@@ -72,6 +72,7 @@ private:
 	void Draw(const DrawBuffer & buffer);
 
 	void DrawMovieFrame(const DrawBuffer & buffer);
+	void DrawMovieFrameOpenCV(const DrawBuffer & buffer);
 	void DrawPoints(const DrawBuffer & buffer);
 	void DrawLabels(const DrawBuffer & buffer);
 	void DrawInformations(const DrawBuffer & buffer);

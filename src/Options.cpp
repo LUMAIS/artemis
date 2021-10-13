@@ -235,6 +235,7 @@ CameraOptions::CameraOptions()
 void CameraOptions::PopulateParser(options::FlagParser & parser)  {
 	parser.AddFlag("camera-fps",FPS,"Camera FPS to use");
 	parser.AddFlag("camera-id", cameraID, "Сamera ID");
+	parser.AddFlag("rendering-height", RenderHeight, "Rendering height of OpenCV windows");
 	parser.AddFlag("camera-slave-width",SlaveWidth,"Camera Width argument for slave mode");
 	parser.AddFlag("camera-slave-height",SlaveHeight,"Camera Height argument for slave mode");
 	parser.AddFlag("camera-strobe",d_strobeDuration,"Camera Strobe duration");

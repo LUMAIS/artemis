@@ -404,7 +404,7 @@ void ProcessFrameTask::DisplayFrame(const Frame::Ptr frame,
 	else
 		RenderHeight =  frame->RenderHeight();
 
-	//DLOG(INFO) << "[ProcessFrameTask]: RenderHeight - "<<RenderHeight;
+	DLOG(INFO) << "[ProcessFrameTask]: CameraID - "<<frame->CameraID();
 
 	UserInterface::FrameToDisplay toDisplay =
 		{.Full = d_downscaled,

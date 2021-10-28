@@ -21,6 +21,12 @@
 #include <string>
 #include <vector>
 
+struct Detection {
+    cv::Rect bbox;
+    float score;
+    int class_idx;
+};
+
 template <typename T> T vectorProduct(const std::vector<T>& v)
 {
     return accumulate(v.begin(), v.end(), 1, std::multiplies<T>());

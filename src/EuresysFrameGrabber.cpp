@@ -6,61 +6,29 @@
 namespace fort {
 namespace artemis {
 
-
+//: Euresys::EGrabber<Euresys::CallbackOnDemand>(gentl)
+//: EGrabberCallbackSingleThread(gentl, interfaceIndex, deviceIndex)
 EuresysFrameGrabber::EuresysFrameGrabber(Euresys::EGenTL & gentl,
-                                         const CameraOptions & options)
-	: Euresys::EGrabber<Euresys::CallbackOnDemand>(gentl)
+                                         const CameraOptions & options, int & interfaceIndex, int & deviceIndex)
+	: Euresys::EGrabber<Euresys::CallbackOnDemand>(gentl,interfaceIndex,deviceIndex)
 	, d_lastFrame(0)
 	, d_toAdd(0)
 	, d_width(0)
-	, d_height(0) 
-	, d_cameraid(0)
-	, d_renderheight(0){
+	, d_height(0)
+	, d_renderheight(0)
+	, d_cameraid("0")
+	{
 
 	using namespace Euresys;
 
-	//--Serhii--8.10.2021
-	/*
-		gc::TL_HANDLE tl = gentl.tlOpen();
-    	uint32_t numInterfaces = gentl.tlGetNumInterfaces(tl);
-		LOG(INFO) << "[LoadFrameGrabber]:  numInterfaces - "<<numInterfaces;
-
-		for (uint32_t interfaceIndex = 0; interfaceIndex < numInterfaces; interfaceIndex++) 
-		{
-        	std::string interfaceID = gentl.tlGetInterfaceID(tl, interfaceIndex);
-        	gc::IF_HANDLE interfaceHandle = gentl.tlOpenInterface(tl, interfaceID);
-        	uint32_t numDevice = gentl.ifGetNumDevices(interfaceHandle);
-
-			numDevice = 1;
-			LOG(INFO) << "[LoadFrameGrabber]:  numDevice - "<<numDevice;
-
-			for (uint32_t deviceIndex = 0; deviceIndex < numDevice; deviceIndex++) 
-			{
-            	std::string deviceID = gentl.ifGetDeviceID(interfaceHandle, deviceIndex);
-            	gc::DEV_HANDLE deviceHandle = gentl.ifOpenDevice(interfaceHandle, deviceID);
-
-            	LOG(INFO) << "[LoadFrameGrabber]:  deviceIndex - "<<deviceIndex;
-
-				try 
-				{
-                	if (gentl.devGetPort(deviceHandle)) 
-					{
-                    	//grabbers.push_back(new MyGrabber(genTL, interfaceIndex, deviceIndex, interfaceID, deviceID));
-						LOG(INFO) << "[LoadFrameGrabber]: Camera connected OK "<<interfaceID<<" <"<<deviceID<<">"<<std::endl;
-                	}
-            	} 
-				catch (const Euresys::gentl_error &) {
-					LOG(INFO) << "[LoadFrameGrabber]: no camera connected on "<<interfaceID<<" <"<<deviceID<<">"<<std::endl;
-            	}
-        	}
-		}
-	//--Serhii--8.10.2021*/
-
+	//EGrabberCallbackSingleThread(gentl, 0, 1);
+	
 	std::string ifID = getString<InterfaceModule>("InterfaceID");
 	std::regex slaveRx("df-camera");
 	bool isMaster = !std::regex_search(ifID,slaveRx);
 
 	if ( isMaster == true ) {
+		
 		d_width = getInteger<RemoteModule>("Width");
 		d_height = getInteger<RemoteModule>("Height");
 
@@ -75,7 +43,6 @@ EuresysFrameGrabber::EuresysFrameGrabber(Euresys::EGenTL & gentl,
 		std::string DeviceIDstr = "Device0Strobe";
 		if(!options.cameraID.empty())
 		{
-			
 			if(std::stoi(options.cameraID) > -1)
 			{
 				DeviceIDstr = "Device" + options.cameraID + "Strobe";
@@ -83,8 +50,10 @@ EuresysFrameGrabber::EuresysFrameGrabber(Euresys::EGenTL & gentl,
 			}
 		}
 
-		DLOG(INFO) << DeviceIDstr;
+		DLOG(INFO) <<"LineSource: " + DeviceIDstr;
 		setString<InterfaceModule>("LineSource",DeviceIDstr);
+
+
 
 		//DLOG(INFO) << "LineSource: Device0Strobe";
 		//setString<InterfaceModule>("LineSource","Device0Strobe");
@@ -122,13 +91,10 @@ EuresysFrameGrabber::EuresysFrameGrabber(Euresys::EGenTL & gentl,
 	
 	d_renderheight = d_height;
 
-	if(!options.cameraID.empty())
-	{
-		if(options.RenderHeight > 0)
-			d_renderheight = options.RenderHeight;
 	
-	}
-
+	if(options.RenderHeight > 0 && options.RenderHeight < d_height)
+		d_renderheight = options.RenderHeight;
+	
 	
 	DLOG(INFO) << "Enable Event";
 	enableEvent<NewBufferData>();
@@ -165,11 +131,13 @@ Frame::Ptr EuresysFrameGrabber::NextFrame() {
 
 void EuresysFrameGrabber::onNewBufferEvent(const Euresys::NewBufferData &data) {
 	std::unique_lock<std::mutex> lock(d_mutex);
-	d_frame = std::make_shared<EuresysFrame>(*this,data,d_lastFrame,d_toAdd);
+	d_frame = std::make_shared<EuresysFrame>(*this,data,d_lastFrame,d_toAdd,d_renderheight, d_cameraid);
 }
 
-EuresysFrame::EuresysFrame(Euresys::EGrabber<Euresys::CallbackOnDemand> & grabber, const Euresys::NewBufferData & data, uint64_t & lastFrame, uint64_t & toAdd )
+EuresysFrame::EuresysFrame(Euresys::EGrabber<Euresys::CallbackOnDemand> & grabber, const Euresys::NewBufferData & data, uint64_t & lastFrame, uint64_t & toAdd, size_t & RenderHeight, std::string CameraID)
 	: Euresys::ScopedBuffer(grabber,data)
+	, d_renderheight(RenderHeight)
+	, d_cameraid(CameraID)
 	, d_width(getInfo<size_t>(GenTL::BUFFER_INFO_WIDTH))
 	, d_height(getInfo<size_t>(GenTL::BUFFER_INFO_HEIGHT))
 	, d_timestamp(getInfo<uint64_t>(GenTL::BUFFER_INFO_TIMESTAMP))

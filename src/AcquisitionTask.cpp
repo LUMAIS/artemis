@@ -19,8 +19,57 @@ FrameGrabber::Ptr AcquisitionTask::LoadFrameGrabber(const std::vector<std::strin
                                                     const CameraOptions & options) {
 #ifndef FORCE_STUB_FRAMEGRABBER_ONLY
 	if (stubImagePaths.empty() && inputVideoPath.length() == 0) {
-		static Euresys::EGenTL egentl;		
-		return std::make_shared<EuresysFrameGrabber>(egentl,options);
+		static Euresys::EGenTL egentl;	
+
+	using namespace Euresys;
+
+	int interfaceID = 0;
+	int deviceID = 0;
+
+	//--Serhii--8.10.2021
+		gc::TL_HANDLE tl = egentl.tlOpen();
+    	uint32_t numInterfaces = egentl.tlGetNumInterfaces(tl);
+		LOG(INFO) << "[LoadFrameGrabber]:  numInterfaces - "<<numInterfaces;
+
+		for (uint32_t interfaceIndex = 0; interfaceIndex < numInterfaces; interfaceIndex++) 
+		{
+        	std::string interfaceID = egentl.tlGetInterfaceID(tl, interfaceIndex);
+        	gc::IF_HANDLE interfaceHandle = egentl.tlOpenInterface(tl, interfaceID);
+        	uint32_t numDevice = egentl.ifGetNumDevices(interfaceHandle);
+			LOG(INFO) << "[LoadFrameGrabber]:  numDevice - "<<numDevice;
+
+			for (uint32_t deviceIndex = 0; deviceIndex < numDevice; deviceIndex++) 
+			{
+            	std::string deviceID = egentl.ifGetDeviceID(interfaceHandle, deviceIndex);
+            	gc::DEV_HANDLE deviceHandle = egentl.ifOpenDevice(interfaceHandle, deviceID);
+
+            	LOG(INFO) << "[LoadFrameGrabber]:  deviceIndex - "<<deviceIndex;
+
+				try 
+				{
+                	if (egentl.devGetPort(deviceHandle)) 
+					{
+                    	//grabbers.push_back(new MyGrabber(genTL, interfaceIndex, deviceIndex, interfaceID, deviceID));
+						//LOG(INFO) << "[LoadFrameGrabber]: Camera connected OK "<<interfaceID<<" <"<<deviceID<<">"<<std::endl;
+                	}
+            	} 
+				catch (const Euresys::gentl_error &) {
+					LOG(INFO) << "[LoadFrameGrabber]: no camera connected on "<<interfaceID<<" <"<<deviceID<<">"<<std::endl;
+            	}
+				
+				if(std::stoi(options.cameraID) == deviceIndex)
+				{
+					interfaceID = interfaceIndex;
+					deviceID = deviceIndex;
+					interfaceIndex = numInterfaces;
+					deviceIndex = numDevice;
+					LOG(INFO) << "[LoadFrameGrabber]: Camera selected "<<deviceID<<std::endl;
+					break;
+				}
+        	}
+		}
+	//--Serhii--8.10.2021
+		return std::make_shared<EuresysFrameGrabber>(egentl,options,interfaceID,deviceID);
 	} else {
 		if(!stubImagePaths.empty())
 		{

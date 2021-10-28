@@ -58,7 +58,9 @@ void TrophallaxisDetector::Detect(const cv::Mat & image, /*size_t nThreads, bool
 
 	std::vector<cv::Point2f> detects;
 
-	torch::DeviceType device_type = torch::kCPU;
+	//torch::DeviceType device_type = torch::kCPU;
+	torch::DeviceType device_type = torch::kCUDA;
+
 	detects = detectorT (module, image,device_type);
 
 	for(int i =0; i<detects.size(); i++)

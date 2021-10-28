@@ -532,20 +532,23 @@ void GLUserInterface::DrawMovieFrame(const DrawBuffer & buffer) {
 
 void GLUserInterface::DrawMovieFrameOpenCV(const DrawBuffer & buffer) {
 	
-	cv::Mat Drawframe;
-    if(buffer.Frame.RenderHeight != buffer.Frame.Full->cols)
+	if(buffer.Frame.RenderHeight != 0)
 	{
-		float k = 1.0*buffer.Frame.Full->cols/buffer.Frame.RenderHeight;
-		size_t RenderWith = buffer.Frame.Full->rows*1.0/k;
-
-		resize(*buffer.Frame.Full,Drawframe, cv::Size(buffer.Frame.RenderHeight, RenderWith), cv::INTER_LINEAR);
-	}
-	else
-		Drawframe = *buffer.Frame.Full;
+		cv::Mat Drawframe;
+    	if(buffer.Frame.RenderHeight != buffer.Frame.Full->cols)
+		{
+			float k = 1.0*buffer.Frame.Full->cols/buffer.Frame.RenderHeight;
+			size_t RenderWith = buffer.Frame.Full->rows*1.0/k;
+			resize(*buffer.Frame.Full,Drawframe, cv::Size(buffer.Frame.RenderHeight, RenderWith), cv::INTER_LINEAR);
+			cv::imshow("Camera" + buffer.Frame.CameraID, Drawframe);
+   	    	cv::waitKey(100);
+		}
+		else
+			Drawframe = *buffer.Frame.Full;
 	
-
-	cv::imshow("Camera" + buffer.Frame.CameraID, Drawframe);
-   	cv::waitKey(100);
+		cv::imshow("Camera" + buffer.Frame.CameraID, Drawframe);
+   		cv::waitKey(100);
+	}
 }
 
 std::string FormatTagID(uint32_t tagID) {

@@ -226,6 +226,7 @@ void ProcessOptions::FinishParse() {
 
 CameraOptions::CameraOptions()
 	: FPS(8.0)
+	, Triggermode(false)
 	, StrobeDuration(1500 * Duration::Microsecond)
 	, StrobeDelay(0) {
 	d_strobeDuration = StrobeDuration.ToString();
@@ -235,6 +236,7 @@ CameraOptions::CameraOptions()
 void CameraOptions::PopulateParser(options::FlagParser & parser)  {
 	parser.AddFlag("camera-fps",FPS,"Camera FPS to use");
 	parser.AddFlag("camera-id", cameraID, "Сamera ID");
+	parser.AddFlag("trigger-mode", Triggermode, "Use a trigger to get a frame");
 	parser.AddFlag("rendering-height", RenderHeight, "Rendering height of OpenCV windows");
 	parser.AddFlag("camera-slave-width",SlaveWidth,"Camera Width argument for slave mode");
 	parser.AddFlag("camera-slave-height",SlaveHeight,"Camera Height argument for slave mode");

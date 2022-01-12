@@ -2,91 +2,33 @@
 
 #include <glog/logging.h>
 #include <regex>
+#include <fstream>
 
 namespace fort {
 namespace artemis {
 
-
 EuresysFrameGrabber::EuresysFrameGrabber(Euresys::EGenTL & gentl,
-                                         const CameraOptions & options)
-	: Euresys::EGrabber<Euresys::CallbackOnDemand>(gentl)
+                                         const CameraOptions & options, int & interfaceIndex, int & deviceIndex)
+	: Euresys::EGrabber<Euresys::CallbackOnDemand>(gentl,interfaceIndex,deviceIndex)
 	, d_lastFrame(0)
 	, d_toAdd(0)
 	, d_width(0)
-	, d_height(0) 
-	, d_cameraid(0)
-	, d_renderheight(0){
+	, d_height(0)
+	, d_renderheight(0)
+	, d_cameraid("0")
+	{
 
 	using namespace Euresys;
-
-<<<<<<< HEAD
-//--Serhii--8.10.2021
-/*
-=======
-	//--Serhii--8.10.2021
-	/*
->>>>>>> 8caabd69500b77cfa003eceba4aeffbcc22f0ffb
-		gc::TL_HANDLE tl = gentl.tlOpen();
-    	uint32_t numInterfaces = gentl.tlGetNumInterfaces(tl);
-		LOG(INFO) << "[LoadFrameGrabber]:  numInterfaces - "<<numInterfaces;
-
-		for (uint32_t interfaceIndex = 0; interfaceIndex < numInterfaces; interfaceIndex++) 
-		{
-        	std::string interfaceID = gentl.tlGetInterfaceID(tl, interfaceIndex);
-        	gc::IF_HANDLE interfaceHandle = gentl.tlOpenInterface(tl, interfaceID);
-        	uint32_t numDevice = gentl.ifGetNumDevices(interfaceHandle);
-
-			numDevice = 2;
-			LOG(INFO) << "[LoadFrameGrabber]:  numDevice - "<<numDevice;
-
-			for (uint32_t deviceIndex = 0; deviceIndex < numDevice; deviceIndex++) 
-			{
-            	std::string deviceID = gentl.ifGetDeviceID(interfaceHandle, deviceIndex);
-            	gc::DEV_HANDLE deviceHandle = gentl.ifOpenDevice(interfaceHandle, deviceID);
-
-            	LOG(INFO) << "[LoadFrameGrabber]:  deviceIndex - "<<deviceIndex;
-
-				try 
-				{
-                	if (gentl.devGetPort(deviceHandle)) 
-					{
-                    	//grabbers.push_back(new MyGrabber(genTL, interfaceIndex, deviceIndex, interfaceID, deviceID));
-						LOG(INFO) << "[LoadFrameGrabber]: Camera connected OK "<<interfaceID<<" <"<<deviceID<<">"<<std::endl;
-                	}
-            	} 
-				catch (const Euresys::gentl_error &) {
-					LOG(INFO) << "[LoadFrameGrabber]: no camera connected on "<<interfaceID<<" <"<<deviceID<<">"<<std::endl;
-            	}
-        	}
-		}
-<<<<<<< HEAD
-			*/
-		//--Serhii--8.10.2021
-
-=======
-	//--Serhii--8.10.2021*/
->>>>>>> 8caabd69500b77cfa003eceba4aeffbcc22f0ffb
-
+	
 	std::string ifID = getString<InterfaceModule>("InterfaceID");
 	std::regex slaveRx("df-camera");
 	bool isMaster = !std::regex_search(ifID,slaveRx);
 
 	if ( isMaster == true ) {
-		d_width = getInteger<RemoteModule>("Width");
-		d_height = getInteger<RemoteModule>("Height");
 
-		DLOG(INFO) << "Width: "<<d_width;
-		DLOG(INFO) << "Height: "<<d_height;
-
-		DLOG(INFO) << "LineSelector: IOUT11";
-		setString<InterfaceModule>("LineSelector","IOUT11");
-		DLOG(INFO) << "LineInverter: True";
-		setString<InterfaceModule>("LineInverter","True");
-
-		std::string DeviceIDstr = "Device0Strobe";
+		std::string DeviceIDstr = "Device"+options.cameraID+"Strobe";
 		if(!options.cameraID.empty())
 		{
-			
 			if(std::stoi(options.cameraID) > -1)
 			{
 				DeviceIDstr = "Device" + options.cameraID + "Strobe";
@@ -94,36 +36,73 @@ EuresysFrameGrabber::EuresysFrameGrabber(Euresys::EGenTL & gentl,
 			}
 		}
 
-		DLOG(INFO) << DeviceIDstr;
-		setString<InterfaceModule>("LineSource",DeviceIDstr);
-
-		//DLOG(INFO) << "LineSource: Device0Strobe";
-		//setString<InterfaceModule>("LineSource","Device0Strobe");
-
-		DLOG(INFO) << "CameraControlMethod: RC";
-		setString<DeviceModule>("CameraControlMethod","RC");
-
 		//This is a big hack allowing to have the camera controlled by the
 		//framegrabber. We set it to pulse mode and double the frequency.
-		setString<DeviceModule>("ExposureReadoutOverlap","True");
-		DLOG(INFO) << "AcquisitionFrameRate: " << options.FPS;
-		setInteger<DeviceModule>("CycleMinimumPeriod",1e6/(2*options.FPS));
 
-		setString<DeviceModule>("CxpTriggerMessageFormat","Toggle");
+	
+		//Serhii--18.12.2021--
+		std::string DeviceModelName;
+		DeviceModelName = getString<RemoteModule>("DeviceModelName");
+		DLOG(INFO) << "DeviceModelName - " + DeviceModelName;
+		if(options.Triggermode)
+		{
+			std::string config = "../configs/"+DeviceModelName+".js";
+			
+			try {
+				runScript(config);
+				DLOG(INFO) << "Camera Configuration - OK!";
+			}
+			catch (...) {
+				DLOG(INFO) << "Failed to configure camera, file ("+config+") is missing";
+			}
+			/*
+			std::ifstream iff(config);
+			if(iff.bad()==true)
+				DLOG(INFO) << "Failed to configure camera, file ("+config+") is missing";
+			else
+			{
+				runScript(config);
+				DLOG(INFO) << "Camera Configuration - OK!";
+			}*/
+			
+		}
+		else
+		{
+			DLOG(INFO) << "LineSelector: IOUT11";
+			setString<InterfaceModule>("LineSelector","IOUT11");
+
+			DLOG(INFO) << "LineInverter: True";
+			setString<InterfaceModule>("LineInverter","True");
+
+			DLOG(INFO) <<"LineSource: " + DeviceIDstr;
+			setString<InterfaceModule>("LineSource",DeviceIDstr);
+
+			setString<DeviceModule>("ExposureReadoutOverlap","True");
+			DLOG(INFO) << "AcquisitionFrameRate: " << options.FPS;
+			setInteger<DeviceModule>("CycleMinimumPeriod",1e6/(2*options.FPS));
+
+			setString<DeviceModule>("CxpTriggerMessageFormat","Toggle");
+
+			DLOG(INFO) << "StrobeDuration: " << options.StrobeDuration;
+			setInteger<DeviceModule>("StrobeDuration",options.StrobeDuration.Microseconds());
+
+			DLOG(INFO) << "StrobeDelay: " << options.StrobeDelay;
+			setInteger<DeviceModule>("StrobeDelay",options.StrobeDelay.Microseconds());
+
+			setString<DeviceModule>("CycleTriggerSource", "Immediate");
+			
+		}
+		
+		d_width = getInteger<RemoteModule>("Width");
+		d_height = getInteger<RemoteModule>("Height");
+
+		DLOG(INFO) << "Width: "<<d_width;
+		DLOG(INFO) << "Height: "<<d_height;
+
+		//Serhii--18.12.2021--
+		//Serhii--9.10.2021 setString<RemoteModule>("ExposureMode","Edge_Triggerred_Programmable");
 
 		setInteger<DeviceModule>("ExposureTime",6000);
-
-		DLOG(INFO) << "StrobeDuration: " << options.StrobeDuration;
-		setInteger<DeviceModule>("StrobeDuration",options.StrobeDuration.Microseconds());
-
-		DLOG(INFO) << "StrobeDelay: " << options.StrobeDelay;
-		setInteger<DeviceModule>("StrobeDelay",options.StrobeDelay.Microseconds());
-
-<<<<<<< HEAD
-		//setString<RemoteModule>("ExposureMode","Edge_Triggerred_Programmable");
-=======
-		//Serhii--9.10.2021 setString<RemoteModule>("ExposureMode","Edge_Triggerred_Programmable");
->>>>>>> 8caabd69500b77cfa003eceba4aeffbcc22f0ffb
 
 	} else {
 		if (options.SlaveWidth == 0 || options.SlaveHeight == 0 ) {
@@ -138,13 +117,10 @@ EuresysFrameGrabber::EuresysFrameGrabber(Euresys::EGenTL & gentl,
 	
 	d_renderheight = d_height;
 
-	if(!options.cameraID.empty())
-	{
-		if(options.RenderHeight > 0)
-			d_renderheight = options.RenderHeight;
 	
-	}
-
+	if(options.RenderHeight > 0 && options.RenderHeight < d_height)
+		d_renderheight = options.RenderHeight;
+	
 	
 	DLOG(INFO) << "Enable Event";
 	enableEvent<NewBufferData>();
@@ -173,7 +149,22 @@ cv::Size EuresysFrameGrabber::Resolution() const {
 }
 
 Frame::Ptr EuresysFrameGrabber::NextFrame() {
-	processEvent<Euresys::NewBufferData>(1000);
+
+	try {
+        //processEvent< Euresys::OneOf<Euresys::NewBufferData, Euresys::DataStreamData> >(12000);
+		processEvent<Euresys::NewBufferData>(12000);
+		DLOG(INFO) << "NextFrame() - OK!"<<std::endl;
+    }
+    catch (const Euresys::gentl_error &err) {
+        if (err.gc_err == Euresys::gc::GC_ERR_TIMEOUT) {
+                DLOG(INFO) << "Timeout receiving frame"<<std::endl;
+            } else {
+                DLOG(INFO) <<"GenTL exception: "<<err.what()<<std::endl;
+                throw;
+        }
+    }
+
+
 	Frame::Ptr res = d_frame;
 	d_frame.reset();
 	return res;
@@ -181,11 +172,13 @@ Frame::Ptr EuresysFrameGrabber::NextFrame() {
 
 void EuresysFrameGrabber::onNewBufferEvent(const Euresys::NewBufferData &data) {
 	std::unique_lock<std::mutex> lock(d_mutex);
-	d_frame = std::make_shared<EuresysFrame>(*this,data,d_lastFrame,d_toAdd);
+	d_frame = std::make_shared<EuresysFrame>(*this,data,d_lastFrame,d_toAdd,d_renderheight, d_cameraid);
 }
 
-EuresysFrame::EuresysFrame(Euresys::EGrabber<Euresys::CallbackOnDemand> & grabber, const Euresys::NewBufferData & data, uint64_t & lastFrame, uint64_t & toAdd )
+EuresysFrame::EuresysFrame(Euresys::EGrabber<Euresys::CallbackOnDemand> & grabber, const Euresys::NewBufferData & data, uint64_t & lastFrame, uint64_t & toAdd, size_t & RenderHeight, std::string CameraID)
 	: Euresys::ScopedBuffer(grabber,data)
+	, d_renderheight(RenderHeight)
+	, d_cameraid(CameraID)
 	, d_width(getInfo<size_t>(GenTL::BUFFER_INFO_WIDTH))
 	, d_height(getInfo<size_t>(GenTL::BUFFER_INFO_HEIGHT))
 	, d_timestamp(getInfo<uint64_t>(GenTL::BUFFER_INFO_TIMESTAMP))

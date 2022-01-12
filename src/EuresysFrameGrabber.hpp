@@ -18,7 +18,9 @@ public :
 	EuresysFrame(Euresys::EGrabber<Euresys::CallbackOnDemand> & grabber,
 				 const Euresys::NewBufferData &,
 				 uint64_t & lastFrame,
-				 uint64_t & toAdd);
+				 uint64_t & toAdd,
+				 size_t & RenderHeight,
+				 std::string CameraID);
 
 	virtual ~EuresysFrame();
 
@@ -32,7 +34,7 @@ public :
 	const cv::Mat & ToCV();
 private :
 	size_t d_width,d_height;
-	int32_t d_renderheight;
+	size_t d_renderheight;
 	std::string d_cameraid;
 	uint64_t d_timestamp,d_ID;
 	cv::Mat d_mat;
@@ -41,12 +43,12 @@ private :
 };
 
 
-class EuresysFrameGrabber : public FrameGrabber,public Euresys::EGrabber<Euresys::CallbackOnDemand> {
+class EuresysFrameGrabber : public FrameGrabber,public Euresys::EGrabber<Euresys::CallbackOnDemand>{//, public Euresys::EGrabberCallbackSingleThread{
 public :
 	typedef std::shared_ptr<Euresys::ScopedBuffer> BufferPtr;
 
 	EuresysFrameGrabber(Euresys::EGenTL & gentl,
-	                    const CameraOptions & options);
+	                    const CameraOptions & options, int & interfaceIndex, int & deviceIndex);
 
 	virtual ~EuresysFrameGrabber();
 

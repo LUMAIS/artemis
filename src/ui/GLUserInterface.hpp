@@ -142,7 +142,7 @@ private:
 
 	const static size_t OVERLAY_COLS = 30;
 	const static size_t OVERLAY_ROWS = 8;
-	const static size_t NORMAL_POINT_SIZE = 70;
+	const static size_t NORMAL_POINT_SIZE = 20;//70;
 	const static size_t HIGHLIGHTED_POINT_SIZE = 100;
 	const static size_t LABEL_FONT_SIZE = 16;
 	const static size_t OVERLAY_FONT_SIZE = 14;

@@ -77,7 +77,7 @@ add_subdirectory(scripts)
 add_subdirectory(src)
 
 file(COPY data DESTINATION ${PROJECT_BINARY_DIR}/)
-
+file(COPY configs DESTINATION ${PROJECT_BINARY_DIR}/)
 
 
 #add_subdirectory(src/trophallaxis)

@@ -172,7 +172,7 @@ void ProcessFrameTask::Run() {
 		//--Serhii--12.10.2021--
 		//cv::Mat testframe = frame->ToCV();
 
-		LOG(INFO) << "[ProcessFrameTask]: frame->cols - " <<frame->Width();
+		//LOG(INFO) << "[ProcessFrameTask]: frame->cols - " <<frame->Width();
 
     	//cv::Mat resized_frame;
 		
@@ -395,16 +395,15 @@ void ProcessFrameTask::DisplayFrame(const Frame::Ptr frame,
 		           0,0,cv::INTER_NEAREST);
 	}
 
-	
-
 	size_t RenderHeight;
 
 	if(frame->RenderHeight() > frame->Height() || frame->RenderHeight() < 0)
-		RenderHeight = frame->Height();
+		RenderHeight = 0;
 	else
 		RenderHeight =  frame->RenderHeight();
 
-	//DLOG(INFO) << "[ProcessFrameTask]: RenderHeight - "<<RenderHeight;
+	//DLOG(INFO) << "[ProcessFrameTask]: CameraID - "<<frame->CameraID();
+	//DLOG(INFO) << "[ProcessFrameTask]: frame->RenderHeight() - "<<frame->RenderHeight();
 
 	UserInterface::FrameToDisplay toDisplay =
 		{.Full = d_downscaled,

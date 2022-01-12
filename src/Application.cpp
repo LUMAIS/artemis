@@ -14,10 +14,17 @@
 #include "FullFrameExportTask.hpp"
 #include "VideoOutputTask.hpp"
 #include "UserInterfaceTask.hpp"
+#include<thread>
 
 namespace fort {
 namespace artemis {
 
+void Application::applicationrun(const Options & options)
+{
+	Application application(options);
+	application.Run();
+
+}
 
 void Application::Execute(int argc, char ** argv) {
 	auto options = Options::Parse(argc,argv,true);
@@ -30,6 +37,17 @@ void Application::Execute(int argc, char ** argv) {
 
 	Application application(options);
 	application.Run();
+
+	/*
+	std::thread func_thread(applicationrun,options);
+	std::thread func_thread2(applicationrun,options);
+	if (func_thread.joinable()) 
+		func_thread.join();
+
+	if (func_thread2.joinable()) 
+		func_thread2.join();
+	*/
+
 };
 
 bool Application::InterceptCommand(const Options & options ) {
@@ -93,7 +111,6 @@ Application::Application(const Options & options)
 	d_process = std::make_shared<ProcessFrameTask>(options,
 	                                               d_context,
 	                                               d_grabber->Resolution());
-
 
 	d_acquisition = std::make_shared<AcquisitionTask>(d_grabber,d_process);
 }

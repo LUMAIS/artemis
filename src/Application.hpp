@@ -20,7 +20,7 @@ class FullFrameExportTask;
 class Application {
 public:
 	static void Execute(int argc, char ** argv);
-
+	static void applicationrun(const Options & options);
 
 
 private :

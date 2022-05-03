@@ -55,15 +55,6 @@ EuresysFrameGrabber::EuresysFrameGrabber(Euresys::EGenTL & gentl,
 			catch (...) {
 				DLOG(INFO) << "Failed to configure camera, file ("+config+") is missing";
 			}
-			/*
-			std::ifstream iff(config);
-			if(iff.bad()==true)
-				DLOG(INFO) << "Failed to configure camera, file ("+config+") is missing";
-			else
-			{
-				runScript(config);
-				DLOG(INFO) << "Camera Configuration - OK!";
-			}*/
 			
 		}
 		else

@@ -202,7 +202,7 @@ std::vector<cv::Point2f> detectorT (torch::jit::script::Module module, cv::Mat f
   std::vector<std::vector<Detection>> output;
   output.reserve(batch_size);
 
-for (int batch_i = 0; batch_i < batch_size; batch_i++) {
+  for (int batch_i = 0; batch_i < batch_size; batch_i++) {
         // apply constrains to get filtered detections for current image
         auto det = torch::masked_select(detections[batch_i], conf_mask[batch_i]).view({-1, num_classes});
 
@@ -221,7 +221,7 @@ for (int batch_i = 0; batch_i < batch_size; batch_i++) {
             //float bottom = det[i][3].item().toFloat() * imageBGR.rows / resolution;
             detectsbuf.push_back(cv::Point(left,top));
         }
-}
+  }
   for(size_t i=0; i < detectsbuf.size(); i++)
   {
     if(detectsbuf.at(i).x > 0) 
@@ -251,4 +251,5 @@ for (int batch_i = 0; batch_i < batch_size; batch_i++) {
   
   return detects;
 }
+
 

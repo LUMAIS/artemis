@@ -276,3 +276,5 @@ template <typename T> std::ostream& operator<<(std::ostream& os, const std::vect
 /*std::vector<std::array<float,2>> TDetect(bool useCUDA, std::string modelFilepath, std::string labelFilepath, cv::Mat imageBGR, size_t nThreads);*/
 
 std::vector<cv::Point2f> detectorT (torch::jit::script::Module module, cv::Mat imageBGR, torch::DeviceType device_type);
+
+std::vector<OBJdetect> detectorV4(std::string pathmodel, cv::Mat frame, torch::DeviceType device_type);

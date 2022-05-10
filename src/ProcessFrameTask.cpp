@@ -11,6 +11,7 @@
 #include "Connection.hpp"
 #include "ApriltagDetector.hpp"
 #include "TrophallaxisDetector.hpp"
+#include "TrackingDetector.hpp"
 #include "FullFrameExportTask.hpp"
 #include "VideoOutputTask.hpp"
 #include "UserInterfaceTask.hpp"
@@ -32,6 +33,7 @@ ProcessFrameTask::ProcessFrameTask(const Options & options,
 
 	SetUpDetection(inputResolution,options.Apriltag);
 	SetUpDetectionTrophallaxis(inputResolution,options.Trophallaxis);
+	SetUpDetectionTracking(inputResolution,options.Tracking);
 	SetUpUserInterface(d_workingResolution,inputResolution,options);
 	SetUpVideoOutputTask(options.VideoOutput,context,options.General.LegacyMode);
 	SetUpCataloguing(options.Process);
@@ -95,6 +97,17 @@ void ProcessFrameTask::SetUpDetectionTrophallaxis(const cv::Size & inputResoluti
 	
 }
 
+void ProcessFrameTask::SetUpDetectionTracking(const cv::Size & inputResolution,
+                                      const TrackingOptions & options) {								  
+	if ( options.trackingmodel.length() == 0 )
+	{
+		return;
+	}
+	d_detectorTrack = std::make_unique<TrackingDetector>(d_maximumThreads,
+	                                                inputResolution,
+	                                                options);
+	
+}
 
 void ProcessFrameTask::SetUpCataloguing(const ProcessOptions & options) {
 	if ( options.NewAntOutputDir.empty() ) {
@@ -304,6 +317,10 @@ void ProcessFrameTask::Detect(const Frame::Ptr & frame,
 	if ( d_detectorTroph ) {
 		d_detectorTroph->Detect(frame->ToCV(),m);
 	}
+
+	if ( d_detectorTrack ) {
+		d_detectorTrack->Detect(frame->ToCV(),m);
+	}
 }
 
 void ProcessFrameTask::ExportFullFrame(const Frame::Ptr & frame) {
@@ -382,27 +399,25 @@ void ProcessFrameTask::ExportROI(const cv::Mat & image,
 }
 
 
-void ProcessFrameTask::DisplayFrame(const Frame::Ptr frame,
-                                    const std::shared_ptr<hermes::FrameReadout> & m) {
+void ProcessFrameTask::DisplayFrame(const Frame::Ptr frame, const std::shared_ptr<hermes::FrameReadout> & m) {
 
 	d_wantedROI = d_userInterface->UpdateROI(d_wantedROI);
 	std::shared_ptr<cv::Mat> zoomed;
 	if ( d_wantedROI.size() != frame->ToCV().size() ) {
 		zoomed = d_grayImagePool.Get();
 		cv::Size size = frame->ToCV().size();
-		cv::resize(cv::Mat(frame->ToCV(),d_wantedROI),
-		           *zoomed,d_workingResolution,
-		           0,0,cv::INTER_NEAREST);
+		cv::resize(cv::Mat(frame->ToCV(),d_wantedROI),*zoomed,d_workingResolution,0,0,cv::INTER_NEAREST);
 	}
 
+	/*
 	size_t RenderHeight;
-
 	if(frame->RenderHeight() > frame->Height() || frame->RenderHeight() < 0)
 		RenderHeight = 0;
 	else
-		RenderHeight =  frame->RenderHeight();
+		RenderHeight =  frame->RenderHeight();*/
 
 	//DLOG(INFO) << "[ProcessFrameTask]: CameraID - "<<frame->CameraID();
+	//DLOG(INFO) << "[ProcessFrameTask]: frame->Height() - "<<frame->Height();
 	//DLOG(INFO) << "[ProcessFrameTask]: frame->RenderHeight() - "<<frame->RenderHeight();
 
 	UserInterface::FrameToDisplay toDisplay =
@@ -417,7 +432,7 @@ void ProcessFrameTask::DisplayFrame(const Frame::Ptr frame,
 		 .VideoOutputProcessed = -1UL,
 		 .VideoOutputDropped = -1UL,
 		 .CameraID = frame->CameraID(),
-		 .RenderHeight = RenderHeight,
+		 /*.RenderHeight = RenderHeight,*/
 		};
 
 	if ( d_videoOutput != nullptr ) {

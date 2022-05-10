@@ -35,7 +35,10 @@ class ApriltagDetector;
 typedef std::shared_ptr<ApriltagDetector>    ApriltagDetectorPtr;
 
 class TrophallaxisDetector;
-typedef std::shared_ptr<TrophallaxisDetector>    TrophallaxisDetectorPtr;
+typedef std::shared_ptr<TrophallaxisDetector>	TrophallaxisDetectorPtr;
+
+class TrackingDetector;
+typedef std::shared_ptr<TrackingDetector>		TrackingDetectorPtr;
 
 
 class ProcessFrameTask : public Task{
@@ -66,6 +69,8 @@ private :
 	                    const ApriltagOptions & options);
 	void SetUpDetectionTrophallaxis(const cv::Size & inputResolution,
 	                    const TrophallaxisOptions & options);
+	void SetUpDetectionTracking(const cv::Size & inputResolution,
+	                    const TrackingOptions & options);
 	void SetUpCataloguing(const ProcessOptions & options);
 	void SetUpUserInterface(const cv::Size & workingresolution,
 	                        const cv::Size & fullresolution,
@@ -133,7 +138,8 @@ private :
 
 	ApriltagDetectorPtr               d_detector;
 
-	TrophallaxisDetectorPtr        d_detectorTroph;
+	TrophallaxisDetectorPtr        	d_detectorTroph;
+	TrackingDetectorPtr        		d_detectorTrack;
 
 	Time                              d_nextFrameExport;
 	Time                              d_nextAntCatalog;

@@ -293,6 +293,20 @@ TrophallaxisOptions::TrophallaxisOptions() :
 	parser.AddFlag("at-trophallaxis-threads",trophallaxisthreads,"Number of threads for trophallaxis detection");
 }
 
+TrackingOptions::TrackingOptions() :
+	 trackingmodel("")
+	, labelfile("")
+	, useCUDA(false)
+	, trackingthreads(1) {
+ }
+
+ void TrackingOptions::PopulateParser(options::FlagParser & parser)  {
+	parser.AddFlag("at-tracking-model",trackingmodel,"The path to the tracking model");
+	parser.AddFlag("at-label-file",labelfile,"The path to the label file");
+	parser.AddFlag("at-useCUDA",useCUDA,"Use CUDA?");
+	parser.AddFlag("at-tracking-threads",trackingthreads,"Number of threads for tracking detection");
+}
+
 void Options::PopulateParser(options::FlagParser & parser)  {
 	General.PopulateParser(parser);
 	Display.PopulateParser(parser);
@@ -300,6 +314,7 @@ void Options::PopulateParser(options::FlagParser & parser)  {
 	VideoOutput.PopulateParser(parser);
 	Apriltag.PopulateParser(parser);
 	Trophallaxis.PopulateParser(parser);
+	Tracking.PopulateParser(parser);
 	Camera.PopulateParser(parser);
 	Process.PopulateParser(parser);
 }

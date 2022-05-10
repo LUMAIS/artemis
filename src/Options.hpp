@@ -102,6 +102,16 @@ struct TrophallaxisOptions {
 	size_t		trophallaxisthreads;
 };
 
+struct TrackingOptions {
+	TrackingOptions();
+	void PopulateParser( options::FlagParser & parser);
+
+	std::string	trackingmodel;
+	std::string	labelfile;
+	bool 		useCUDA;
+	size_t		trackingthreads;
+};
+
 struct CameraOptions {
 	CameraOptions();
 	void PopulateParser( options::FlagParser & parser);
@@ -143,7 +153,8 @@ struct Options {
 	NetworkOptions     Network;
 	VideoOutputOptions VideoOutput;
 	ApriltagOptions    Apriltag;
-	TrophallaxisOptions    Trophallaxis;
+	TrophallaxisOptions		Trophallaxis;
+	TrackingOptions    		Tracking;
 	CameraOptions      Camera;
 	ProcessOptions     Process;
 

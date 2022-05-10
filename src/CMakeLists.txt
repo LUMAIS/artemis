@@ -79,6 +79,7 @@ set(SRC_FILES utils/Defer.cpp
 	          ProcessFrameTask.cpp
 	          ApriltagDetector.cpp
 			  TrophallaxisDetector.cpp
+			  TrackingDetector.cpp
 	          FullFrameExportTask.cpp
 	          UserInterfaceTask.cpp
 	          VideoOutputTask.cpp
@@ -113,6 +114,7 @@ set(HDR_FILES utils/Defer.hpp
 	          ProcessFrameTask.hpp
 	          ApriltagDetector.hpp
 			  TrophallaxisDetector.hpp
+			  TrackingDetector.hpp
 	          FullFrameExportTask.hpp
 	          UserInterfaceTask.hpp
 	          VideoOutputTask.hpp
@@ -209,10 +211,12 @@ target_link_libraries(artemis-common ${GLOG_LIBRARIES}
 #ADD_LIBRARY(mylib SHARED libtesttorch.cpp)
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")
 
-ADD_LIBRARY(antdetect SHARED trophallaxis/antdetect.cpp)
+ADD_LIBRARY(Trophallaxis SHARED detectors/Trophallaxis.cpp)
+ADD_LIBRARY(Tracking SHARED detectors/Tracking.cpp)
 
 add_executable(artemis main.cpp)
-target_link_libraries(artemis artemis-common antdetect ${TORCH_LIBRARIES})
+target_link_libraries(artemis artemis-common Trophallaxis ${TORCH_LIBRARIES})
+target_link_libraries(artemis artemis-common Tracking ${TORCH_LIBRARIES})
 
 
 add_check_test(NAME artemis

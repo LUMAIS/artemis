@@ -92,6 +92,7 @@ void FlagParser::Parse(int & argc,
 			//simple case, its a longname
 			std::string longName= a->substr(2);
 			auto fi = d_longFlags.find(longName);
+
 			if ( fi == d_longFlags.end() ) {
 				ReportUnused(*a);
 				continue;
@@ -296,8 +297,8 @@ void FlagParser::CheckFlagName(const std::string & name,char shortName) const {
 }
 
 
-
 void FlagParser::ReportUnused(const std::string & name) {
+
 	if ( d_mode & DoNotReportUnused ) {
 		return;
 	}

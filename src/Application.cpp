@@ -36,6 +36,7 @@ void Application::Execute(int argc, char ** argv) {
 	InitGlobalDependencies();
 
 	Application application(options);
+	
 	application.Run();
 
 	/*
@@ -47,7 +48,6 @@ void Application::Execute(int argc, char ** argv) {
 	if (func_thread2.joinable()) 
 		func_thread2.join();
 	*/
-
 };
 
 bool Application::InterceptCommand(const Options & options ) {
@@ -117,6 +117,7 @@ Application::Application(const Options & options)
 
 
 void Application::SpawnTasks() {
+
 	if ( d_process->FullFrameExportTask() ) {
 		d_threads.push_back(Task::Spawn(*d_process->FullFrameExportTask(),20));
 	}
@@ -130,7 +131,6 @@ void Application::SpawnTasks() {
 	}
 
 	d_threads.push_back(Task::Spawn(*d_process,0));
-
 	d_threads.push_back(Task::Spawn(*d_acquisition,0));
 }
 

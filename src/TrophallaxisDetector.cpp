@@ -1,7 +1,7 @@
 //it look like ApriltagDetector.cpp
 
 #include "TrophallaxisDetector.hpp"
-#include "trophallaxis/antdetect.hpp"
+#include "detectors/Trophallaxis.hpp"
 
 #include <fort/tags/fort-tags.h>
 
@@ -67,7 +67,7 @@ void TrophallaxisDetector::Detect(const cv::Mat & image, /*size_t nThreads, bool
 
 	DLOG(INFO) << "[TrophallaxisDetector]: DeviceType - " << device_type;
 
-	detects = detectorT (module, image,device_type);
+	detects = detectorT (module, image, device_type);
 
 	for(int i =0; i<detects.size(); i++)
 	{

@@ -64,10 +64,10 @@ StubVideoGrabber::StubVideoGrabber(const std::string & paths,
 	 else
 	 {
 		cv::Mat framebuf;
+		cap.set(cv::CAP_PROP_POS_FRAMES, 0);
 		for (int frame_count = 0; frame_count < cap.get(cv::CAP_PROP_FRAME_COUNT); frame_count++) 
 		{
-        	cap.set(cv::CAP_PROP_POS_FRAMES, frame_count);
-          	
+        	
           	if (!cap.read(framebuf)) {
 				LOG(INFO) << "[StubVideoGrabber]: Failed to extract the frame "<<frame_count;
           	}
@@ -75,11 +75,24 @@ StubVideoGrabber::StubVideoGrabber(const std::string & paths,
 			{
 				//std::string ty =  type2str(framebuf.type());
 				//printf("Matrix 1: %s(%d) %dx%d \n", ty.c_str(),framebuf.type(), framebuf.cols, framebuf.rows );
-				
-				cv::Mat frame;
 
-				cv::cvtColor(framebuf, frame, cv::COLOR_RGB2GRAY);
+				framebuf.convertTo(framebuf, CV_8UC3);
+				uint16_t res;
+
+				if(framebuf.rows > framebuf.cols)
+					res = framebuf.rows;
+				else
+					res = framebuf.cols;
 				
+				cv::Mat frame(res, res, CV_8UC3, cv::Scalar(0, 0, 0));
+			
+				if(framebuf.rows > framebuf.cols)
+					framebuf.copyTo(frame(cv::Rect((framebuf.rows - framebuf.cols)/2, 0, framebuf.cols, framebuf.rows)));
+				else
+					framebuf.copyTo(frame(cv::Rect(0, (framebuf.cols - framebuf.rows)/2, framebuf.cols, framebuf.rows)));
+				
+				cv::cvtColor(frame, frame, cv::COLOR_RGB2GRAY);
+
 				d_images.push_back(frame);
 
 				LOG(INFO) << "[StubVideoGrabber]: Success to extracted the frame "<<frame_count;

@@ -14,7 +14,9 @@ std::vector<cv::Point2f> detectorT (torch::jit::script::Module module, cv::Mat f
   std::vector<cv::Point2f> detects;
   std::vector<cv::Point2f> detectsbuf;
   cv::Mat imageBGR;
-  cv::resize(frame, imageBGR,cv::Size(992, 992),cv::InterpolationFlags::INTER_CUBIC);
+  //cv::resize(frame, imageBGR,cv::Size(992, 992),cv::InterpolationFlags::INTER_CUBIC);
+
+  frame.copyTo(imageBGR);
 
   cv::cvtColor(imageBGR, imageBGR, cv::COLOR_BGR2RGB);
   imageBGR.convertTo(imageBGR, CV_32FC3, 1.0f / 255.0f);

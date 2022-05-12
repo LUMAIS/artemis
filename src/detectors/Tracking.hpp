@@ -196,4 +196,5 @@ public:
   }
 };
 
-std::vector<std::pair<cv::Point2f,uint16_t>> DetectorMotionV2_1(torch::jit::script::Module module, torch::DeviceType device_type, cv::Mat frame0, cv::Mat frame, std::vector<ALObject> &objects, size_t id_frame, bool usedetector);
+cv::Mat frame_resizing(cv::Mat frame);
+std::vector<std::pair<cv::Point2f,uint16_t>> DetectorMotionV2_1(std::string pathmodel, torch::DeviceType device_type, cv::Mat frame0, cv::Mat frame, std::vector<ALObject> &objects, size_t id_frame, bool usedetector);

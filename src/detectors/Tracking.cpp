@@ -8,6 +8,7 @@ using std::chrono::seconds;
 using std::chrono::system_clock;
 
 //------------------------May 4 2022-------------------------
+
 cv::Mat frame_resizing(cv::Mat frame)
 {
   uint16_t rows = frame.rows;
@@ -18,30 +19,29 @@ cv::Mat frame_resizing(cv::Mat frame)
 
   if (rows > cols)
   {
-    rwsize = (float)rows * rows / (float)cols;
-    clsize = rows;
+    rwsize = (float)model_resolution * rows / cols;
+    clsize = (float)model_resolution;
   }
   else
   {
-    rwsize = rows;
-    clsize = (float)rows * cols / (float)rows;
+    rwsize = (float)model_resolution;
+    clsize = (float)model_resolution * cols / rows;
   }
 
   cv::resize(frame, frame, cv::Size(clsize, rwsize), cv::InterpolationFlags::INTER_CUBIC);
-  cv::Rect rect(0, 0, rows, rows);
+  cv::Rect rect(0, 0, model_resolution, model_resolution);
 
   return frame(rect);
 }
 
-std::vector<OBJdetect> detectorV4(torch::jit::script::Module module, cv::Mat frame, torch::DeviceType device_type)
+std::vector<OBJdetect> detectorV4(std::string pathmodel, cv::Mat frame, torch::DeviceType device_type)
 {
   std::vector<OBJdetect> obj_detects;
   auto millisec = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-  //torch::jit::script::Module module = torch::jit::load(pathmodel);
+  torch::jit::script::Module module = torch::jit::load(pathmodel);
   std::cout << "Load module +" << duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count() - millisec << "ms" << std::endl;
   millisec = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
 
-  //uint16_t rows = 992;
   uint16_t pointsdelta = 5;
   std::vector<cv::Point2f> detects;
   std::vector<cv::Point2f> detectsCent;
@@ -51,8 +51,7 @@ std::vector<OBJdetect> detectorV4(torch::jit::script::Module module, cv::Mat fra
   cv::Scalar class_name_color[9] = {cv::Scalar(255, 0, 0), cv::Scalar(0, 0, 255), cv::Scalar(0, 255, 0), cv::Scalar(255, 0, 255), cv::Scalar(0, 255, 255), cv::Scalar(255, 255, 0), cv::Scalar(255, 255, 255), cv::Scalar(200, 0, 200), cv::Scalar(100, 0, 255)};
   cv::Mat imageBGR;
 
-  imageBGR = frame_resizing(frame);
-  // cv::resize(frame, imageBGR,cv::Size(992, 992),cv::InterpolationFlags::INTER_CUBIC);
+  frame.copyTo(imageBGR);
 
   cv::cvtColor(imageBGR, imageBGR, cv::COLOR_BGR2RGB);
   imageBGR.convertTo(imageBGR, CV_32FC3, 1.0f / 255.0f);
@@ -245,7 +244,7 @@ cv::Point2f claster_center(std::vector<cv::Point2f> claster_points)
   return claster_center;
 }
 
-std::vector<std::pair<cv::Point2f,uint16_t>> DetectorMotionV2_1(torch::jit::script::Module module, torch::DeviceType device_type, cv::Mat frame0, cv::Mat frame, std::vector<ALObject> &objects, size_t id_frame, bool usedetector)
+std::vector<std::pair<cv::Point2f,uint16_t>> DetectorMotionV2_1(std::string pathmodel, torch::DeviceType device_type, cv::Mat frame0, cv::Mat frame, std::vector<ALObject> &objects, size_t id_frame, bool usedetector)
 {
   cv::Scalar class_name_color[20] = {
       cv::Scalar(255, 0, 0),
@@ -279,6 +278,22 @@ std::vector<std::pair<cv::Point2f,uint16_t>> DetectorMotionV2_1(torch::jit::scri
 
   cv::Mat imag;
   cv::Mat imagbuf;
+
+  float corr = 1.0;
+  if (usedetector)
+  {
+    corr = (float)frame.rows / (float)model_resolution;
+
+    std::cout<<"frame.rows - "<<frame.rows<<std::endl;
+    std::cout<<"model_resolution - "<<model_resolution<<std::endl;
+    std::cout<<"corr - "<<corr<<std::endl;
+
+    frame = frame_resizing(frame);
+  }
+  
+
+
+
   cv::Mat framebuf = frame;
 
   uint16_t rows = frame.rows;
@@ -304,7 +319,7 @@ std::vector<std::pair<cv::Point2f,uint16_t>> DetectorMotionV2_1(torch::jit::scri
   //--------------------<detection using a classifier>----------
   if (usedetector)
   {
-    detects = detectorV4(module, frame, device_type);
+    detects = detectorV4(pathmodel, frame, device_type);
 
     for (uint16_t i = 0; i < objects.size(); i++)
     {
@@ -324,8 +339,8 @@ std::vector<std::pair<cv::Point2f,uint16_t>> DetectorMotionV2_1(torch::jit::scri
     {
       std::vector<cv::Point2f> claster_points;
       claster_points.push_back(detects.at(i).detect);
-      imagbuf = frame_resizing(framebuf);
-      img = imagbuf(cv::Range(detects.at(i).detect.y - half_imgsize * koef, detects.at(i).detect.y + half_imgsize * koef), cv::Range(detects.at(i).detect.x - half_imgsize * koef, detects.at(i).detect.x + half_imgsize * koef));
+      img = framebuf(cv::Range(detects.at(i).detect.y - half_imgsize * koef, detects.at(i).detect.y + half_imgsize * koef), cv::Range(detects.at(i).detect.x - half_imgsize * koef, detects.at(i).detect.x + half_imgsize * koef));
+      
       cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
       img.convertTo(img, CV_8UC3);
 
@@ -334,8 +349,6 @@ std::vector<std::pair<cv::Point2f,uint16_t>> DetectorMotionV2_1(torch::jit::scri
       obj.claster_center = detects.at(i).detect;
       obj.rectangle = detects.at(i).rectangle;
       obj.det_mc = true;
-      // obj.track_points.push_back(detects.at(i).detect);
-      // obj.push_track_point(detects.at(i).detect);
 
       float rm = rcobj * (float)rows / (float)reduseres;
       bool newobj = true;
@@ -399,7 +412,7 @@ std::vector<std::pair<cv::Point2f,uint16_t>> DetectorMotionV2_1(torch::jit::scri
   float rwsize;
   float clsize;
 
-  imagbuf = frame;
+  frame.copyTo(imagbuf);
 
   if (rows > cols)
   {
@@ -409,10 +422,9 @@ std::vector<std::pair<cv::Point2f,uint16_t>> DetectorMotionV2_1(torch::jit::scri
   else
   {
     rwsize = (float)rows;
-    clsize = (float)frame_resolution * cols / (float)rows;;
+    clsize = (float)frame_resolution * cols / (float)rows;
   }
   
-
   cv::resize(imagbuf, imagbuf, cv::Size(clsize, rwsize), cv::InterpolationFlags::INTER_CUBIC);
   cv::Rect rectb(0, 0, rows, rows);
   imag = imagbuf(rectb);
@@ -457,8 +469,8 @@ std::vector<std::pair<cv::Point2f,uint16_t>> DetectorMotionV2_1(torch::jit::scri
 
       if (((int)color2 - (int)color1) > pft)
       {
-        pm.x = x * rows / reduseres;
-        pm.y = y * rows / reduseres;
+        pm.x = (float)x * rows / reduseres;
+        pm.y = (float)y * rows / reduseres;
         motion.push_back(pm);
       }
     }
@@ -664,8 +676,8 @@ std::vector<std::pair<cv::Point2f,uint16_t>> DetectorMotionV2_1(torch::jit::scri
 
       if (clasters[cls_id].size() > mpcc && newobj == true) // if there are enough moving points
       {
-        imagbuf = frame_resizing(framebuf);
-        imagbuf.convertTo(imagbuf, CV_8UC3);
+        framebuf.convertTo(imagbuf, CV_8UC3);
+
         img = imagbuf(cv::Range(clastercenter.y - half_imgsize * koef, clastercenter.y + half_imgsize * koef), cv::Range(clastercenter.x - half_imgsize * koef, clastercenter.x + half_imgsize * koef));
         cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
         img.convertTo(img, CV_8UC3);
@@ -730,8 +742,7 @@ std::vector<std::pair<cv::Point2f,uint16_t>> DetectorMotionV2_1(torch::jit::scri
 
       if (clasters[cls].size() > mpcc && newobj == true) // if there are enough moving points
       {
-        imagbuf = frame_resizing(framebuf);
-        imagbuf.convertTo(imagbuf, CV_8UC3);
+        framebuf.convertTo(imagbuf, CV_8UC3);
         img = imagbuf(cv::Range(clastercenter.y - half_imgsize * koef, clastercenter.y + half_imgsize * koef), cv::Range(clastercenter.x - half_imgsize * koef, clastercenter.x + half_imgsize * koef));
         cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
         img.convertTo(img, CV_8UC3);
@@ -754,8 +765,7 @@ std::vector<std::pair<cv::Point2f,uint16_t>> DetectorMotionV2_1(torch::jit::scri
     if (objects.at(i).det_mc == false && objects.at(i).det_pos == false)
       continue;
 
-    imagbuf = frame_resizing(framebuf);
-    imagbuf.convertTo(imagbuf, CV_8UC3);
+    framebuf.convertTo(imagbuf, CV_8UC3);
 
     if (objects[i].det_mc == false)
     {
@@ -879,9 +889,18 @@ std::vector<std::pair<cv::Point2f,uint16_t>> DetectorMotionV2_1(torch::jit::scri
   for (int i = 0; i < objects.size(); i++)
   {
     if(objects[i].det_mc == true)
-      detects_P2f_id.push_back(std::make_pair(objects[i].model_center,objects[i].id));
+    {
+      pt1.x = objects[i].model_center.x * corr;
+      pt1.y = objects[i].model_center.y * corr;
+      detects_P2f_id.push_back(std::make_pair(pt1,objects[i].id));
+    }
     else if(objects[i].det_pos == true)
-      detects_P2f_id.push_back(std::make_pair(objects[i].claster_center,objects[i].id));
+    {
+      pt1.x = objects[i].claster_center.x * corr;
+      pt1.y = objects[i].claster_center.y * corr;
+      detects_P2f_id.push_back(std::make_pair(pt1,objects[i].id));
+    }
+      
   }
   
   return detects_P2f_id;

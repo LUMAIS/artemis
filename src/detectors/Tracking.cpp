@@ -283,17 +283,9 @@ std::vector<std::pair<cv::Point2f,uint16_t>> DetectorMotionV2_1(std::string path
   if (usedetector)
   {
     corr = (float)frame.rows / (float)model_resolution;
-
-    std::cout<<"frame.rows - "<<frame.rows<<std::endl;
-    std::cout<<"model_resolution - "<<model_resolution<<std::endl;
-    std::cout<<"corr - "<<corr<<std::endl;
-
     frame = frame_resizing(frame);
   }
   
-
-
-
   cv::Mat framebuf = frame;
 
   uint16_t rows = frame.rows;

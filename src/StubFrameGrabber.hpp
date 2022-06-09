@@ -17,12 +17,13 @@ public :
 	virtual size_t Width() const;
 	virtual size_t Height() const;
 	virtual std::string CameraID() const;
+	virtual uint64_t EventCount() const;
 	virtual size_t RenderHeight() const;
 	virtual uint64_t Timestamp() const;
 	virtual uint64_t ID() const;
 	const cv::Mat & ToCV();
 private :
-	uint64_t d_ID;
+	uint64_t d_ID,d_eventcount;
 	cv::Mat d_mat;
 	std::string d_cameraid;
 	size_t d_renderheight;

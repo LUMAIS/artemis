@@ -7,6 +7,13 @@
 #include "Options.hpp"
 
 #include <opencv2/core/core.hpp>
+#include <opencv2/dnn/dnn.hpp>
+#include <opencv2/imgcodecs.hpp>
+#include <opencv2/imgproc.hpp>
+
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/opencv.hpp>
+
 #include <mutex>
 
 
@@ -20,7 +27,7 @@ public :
 				 uint64_t & lastFrame,
 				 uint64_t & toAdd,
 				 size_t & RenderHeight,
-				 std::string CameraID);
+				 std::string CameraID, uint64_t EventCount);
 
 	virtual ~EuresysFrame();
 
@@ -28,6 +35,7 @@ public :
 	virtual size_t Width() const;
 	virtual size_t Height() const;
 	virtual std::string CameraID() const;
+	virtual uint64_t EventCount() const;
 	virtual size_t RenderHeight() const;
 	virtual uint64_t Timestamp() const;
 	virtual uint64_t ID() const;
@@ -36,10 +44,9 @@ private :
 	size_t d_width,d_height;
 	size_t d_renderheight;
 	std::string d_cameraid;
-	uint64_t d_timestamp,d_ID;
+	uint64_t d_timestamp,d_ID,d_eventcount;
 	cv::Mat d_mat;
 	friend class EuresysFrameGrabbero;
-
 };
 
 
@@ -56,6 +63,7 @@ public :
 	void Start() override;
 	void Stop() override;
 	Frame::Ptr NextFrame() override;
+	//boot MatchingCameraID() override;
 
 	cv::Size Resolution() const override;
 private:
@@ -69,6 +77,7 @@ private:
 	int32_t            d_width,d_height;
 	size_t			   d_renderheight;
 	std::string        d_cameraid;
+	uint64_t		   d_eventcount;
 };
 
 

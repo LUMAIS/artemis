@@ -43,7 +43,7 @@ private:
 	typedef std::chrono::high_resolution_clock clock;
 	typedef clock::time_point time;
 	std::vector<cv::Mat> d_images;
-	uint64_t             d_ID,d_timestamp;
+	uint64_t             d_ID,d_timestamp,d_eventcount;
 	Time                 d_last;
 	Duration             d_period;
 	std::string			 d_cameraid;

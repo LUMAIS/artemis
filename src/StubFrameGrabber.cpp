@@ -36,6 +36,10 @@ std::string StubFrame::CameraID() const {
 	return d_cameraid;
 }
 
+uint64_t StubFrame::EventCount() const {
+	return d_eventcount;
+}
+
 size_t StubFrame::RenderHeight() const {
 	return d_renderheight;
 }

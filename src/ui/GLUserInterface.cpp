@@ -127,10 +127,18 @@ GLUserInterface::GLFWwindowPtr GLUserInterface::OpenWindow(const cv::Size & size
 	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_MAXIMIZED,GLFW_TRUE);
+	
+	char title[20];
+
+	std::strcpy(title,"Artemis CamID \0");
+	//std::strcat(title,buffer.Frame.CameraID);
+
+
 	auto window = glfwCreateWindow(size.width,
 	                               size.height,
-	                               "artemis",
+	                               title,
 	                               NULL,NULL);
+
 	if ( !window ) {
 		throw_glfw_error("could not open window");
 	}

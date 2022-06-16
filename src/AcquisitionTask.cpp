@@ -66,7 +66,17 @@ namespace fort
 							LOG(INFO) << "[LoadFrameGrabber]: no camera connected on " << interfaceID << " <" << deviceID << ">" << std::endl;
 						}
 
-						if (std::stoi(options.cameraID) == deviceIndex)
+						bool deviceinit = false;
+
+						if (triggermode)
+						{
+							if (std::stoi(cameraID) == deviceIndex)
+								deviceinit = true;
+						}
+						else if (std::stoi(options.cameraID) == deviceIndex)
+							deviceinit = true;
+
+						if (deviceinit)
 						{
 							interfaceID = interfaceIndex;
 							deviceID = deviceIndex;
@@ -120,14 +130,17 @@ namespace fort
 			d_grabber->Start();
 			bool ptrframe = true;
 
-			std::vector<std::pair<cv::Mat, uint64_t>> fbuf;
+			//std::vector<std::pair<cv::Mat, uint64_t>> fbuf;
+
+			std::vector<std::tuple<cv::Mat, uint64_t, uint64_t>> fbuf;
+			
 			bool mp4conf = false;
 			std::string video_filename;
 			cv::VideoWriter writer;
 			int codec = cv::VideoWriter::fourcc('M', 'P', '4', 'V');
 			cv::Size sizeFrame;
 			double fps = 1.0;
-			uint8_t nt = 9;
+			uint8_t nt = 3;
 
 			while (d_quit.load() == false && ptrframe == true)
 			{
@@ -135,24 +148,34 @@ namespace fort
 
 				if (triggermode)
 				{
-					DLOG(INFO) << "EventCount - " << f->EventCount() << std::endl;
+					cv::Point2f pt, pt1, pt2;
+					pt.x = 20.0;
+					pt.y = 20.0;
 
-					if (f->EventCount() % 3 != std::stoi(f->CameraID()))
+					pt1.x = 10.0;
+					pt1.y = 5.0;
+
+					pt2.x = 180.0;
+					pt2.y = 25.0;
+
+					
+					if (f->EventCount() % 3 != std::stoi(f->CameraID()) || f->EventCount() == 0)
 						continue;
 
-					LOG(INFO) << "[AcquisitionTask]:  f->Timestamp() - " << f->Timestamp() / 100000;
+					DLOG(INFO) << "CameraID - " << f->CameraID() << " | EventCount - " << f->EventCount() << std::endl;
+
+					//LOG(INFO) << "[AcquisitionTask]:  f->Timestamp() - " << f->Timestamp();
 
 					if (mp4conf == false)
 					{
 						if (fbuf.size() < nt)
 						{
-
-							fbuf.push_back(std::make_pair(f->ToCV(), f->Timestamp()));
+							fbuf.push_back(std::make_tuple(f->ToCV(), f->Timestamp(), f->EventCount()));
 						}
 						else
 						{
-							fps = (double)fbuf.size() / ((fbuf.at(fbuf.size() - 1).second - fbuf.at(0).second) / 1000000.0);
-							LOG(INFO) << "[AcquisitionTask]:  fps - " << fps;
+							fps = (double)fbuf.size() / ((std::get<1>(fbuf.at(fbuf.size() - 1)) - std::get<1>(fbuf.at(0))) / 1000000.0);
+							// LOG(INFO) << "[AcquisitionTask]:  fps - " << fps;
 
 							video_filename = "cam_id_" + f->CameraID() + ".mp4";
 							writer.open(video_filename, codec, fps, cv::Size(1000, 1000), true);
@@ -161,10 +184,22 @@ namespace fort
 							for (int8_t i = 0; i < fbuf.size(); i++)
 							{
 								cv::Mat frame;
-								fbuf.at(i).first.copyTo(frame);
+								std::get<0>(fbuf.at(i)).copyTo(frame);
 								cv::cvtColor(frame, frame, cv::COLOR_BGR2RGB);
 								frame.convertTo(frame, CV_8UC3);
 								cv::resize(frame, frame, cv::Size(1000, 1000), cv::InterpolationFlags::INTER_CUBIC);
+
+								cv::rectangle(frame, pt1, pt2, cv::Scalar(0, 0, 0), cv::FILLED);
+
+								std::string str = "EventCount: " + std::to_string(std::get<2>(fbuf.at(i)));
+								cv::putText(frame, 	// target image
+											str,   	// text
+											pt, 	// top-left position
+											1,
+											1,
+											cv::Scalar(255, 255, 255), // font color
+											1);
+
 								writer.write(frame);
 							}
 						}
@@ -177,6 +212,16 @@ namespace fort
 						cv::cvtColor(frame, frame, cv::COLOR_BGR2RGB);
 						frame.convertTo(frame, CV_8UC3);
 						cv::resize(frame, frame, cv::Size(1000, 1000), cv::InterpolationFlags::INTER_CUBIC);
+						cv::rectangle(frame, pt1, pt2, cv::Scalar(0, 0, 0), cv::FILLED);
+						std::string str = "EventCount: " + std::to_string(f->EventCount());
+						cv::putText(frame, 	// target image
+									str,   	// text
+									pt, 	// top-left position
+									1,
+									1,
+									cv::Scalar(255, 255, 255), // font color
+									1);
+
 						writer.write(frame);
 					}
 				}

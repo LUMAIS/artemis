@@ -22,13 +22,23 @@ namespace fort
 
 			if (isMaster == true)
 			{
-				std::string DeviceIDstr = "Device" + options.cameraID + "Strobe";
-				if (!options.cameraID.empty())
+				std::string DeviceIDstr;
+
+				if (options.Triggermode)
 				{
-					if (std::stoi(options.cameraID) > -1)
+					DeviceIDstr = "Device" + std::to_string(deviceIndex) + "Strobe";
+					d_cameraid = std::to_string(deviceIndex);
+				}
+				else
+				{
+					DeviceIDstr = "Device" + options.cameraID + "Strobe";
+					if (!options.cameraID.empty())
 					{
-						DeviceIDstr = "Device" + options.cameraID + "Strobe";
-						d_cameraid = options.cameraID;
+						if (std::stoi(options.cameraID) > -1)
+						{
+							DeviceIDstr = "Device" + options.cameraID + "Strobe";
+							d_cameraid = options.cameraID;
+						}
 					}
 				}
 
@@ -43,16 +53,16 @@ namespace fort
 				if (options.Triggermode)
 				{
 					std::string config = "../configs/" + DeviceModelName + ".js";
+
 					try
 					{
 						runScript(config);
 						DLOG(INFO) << "Camera Configuration - OK!";
 						// cv::Size sizeFrame(testimg.cols, testimg.rows);
-						
 					}
 					catch (...)
 					{
-						DLOG(INFO) << "Failed to configure camera, file (" + config + ") is missing";
+						DLOG(INFO) << "Failed to configure camera, file (" + config + ") is missing or camera not available";
 					}
 				}
 				else
@@ -90,7 +100,7 @@ namespace fort
 				// Serhii--18.12.2021--
 				// Serhii--9.10.2021 setString<RemoteModule>("ExposureMode","Edge_Triggerred_Programmable");
 
-				setInteger<DeviceModule>("ExposureTime", 6000);
+				//setInteger<DeviceModule>("ExposureTime", 6000);
 			}
 			else
 			{
@@ -145,7 +155,7 @@ namespace fort
 			{
 				// processEvent< Euresys::OneOf<Euresys::NewBufferData, Euresys::DataStreamData> >(12000);
 				processEvent<Euresys::NewBufferData>(12000);
-				//DLOG(INFO) << "NextFrame() - OK!" << std::endl;
+				// DLOG(INFO) << "NextFrame() - OK!" << std::endl;
 				d_eventcount = getInteger<Euresys::DeviceModule>("EventCount[CameraTriggerRisingEdge]");
 			}
 			catch (const Euresys::gentl_error &err)

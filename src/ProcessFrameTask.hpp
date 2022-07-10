@@ -58,7 +58,6 @@ public:
 	UserInterfaceTaskPtr   UserInterfaceTask() const;
 	FullFrameExportTaskPtr FullFrameExportTask() const;
 
-
 private :
 	typedef tbb::concurrent_bounded_queue<Frame::Ptr> FrameQueue;
 
@@ -150,6 +149,7 @@ private :
 	size_t              d_frameDropped;
 	size_t              d_frameProcessed;
 	Time                d_start;
+	bool                d_todisplayframe;
 };
 
 } // namespace artemis

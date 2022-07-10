@@ -105,7 +105,6 @@ GLUserInterface::GLUserInterface(const cv::Size & workingResolution,
 		throw;
 	}
 
-
 	try {
 		InitContext();
 	} catch ( const std::exception &) {
@@ -116,7 +115,6 @@ GLUserInterface::GLUserInterface(const cv::Size & workingResolution,
 
 	InitGLData();
 	SetWindowCallback();
-
 }
 
 GLUserInterface::GLFWwindowPtr GLUserInterface::OpenWindow(const cv::Size & size) {

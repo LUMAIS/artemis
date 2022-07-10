@@ -123,8 +123,10 @@ struct CameraOptions {
 	size_t    SlaveWidth;
 	size_t    SlaveHeight;
 	std::string cameraID;
+	bool 		toDisplayFrame = true;
 	size_t		RenderHeight;
-	bool	  Triggermode;
+	std::string	  Triggermode = "none";
+	std::string ToFile;
 private:
 	std::string d_strobeDuration,d_strobeDelay;
 };

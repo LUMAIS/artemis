@@ -20,8 +20,7 @@ class FullFrameExportTask;
 class Application {
 public:
 	static void Execute(int argc, char ** argv);
-	static void applicationrun(const Options & options);
-
+	static void applicationrun(const Options & options, bool UITask);
 
 private :
 	static bool InterceptCommand(const Options & options);
@@ -32,10 +31,10 @@ private :
 
 	Application(const Options & options);
 
-	void Run();
+	void Run(bool UITask);
 
 	void SpawnIOContext();
-	void SpawnTasks(uint8_t i);
+	void SpawnTasks(bool UITask);
 	void JoinTasks();
 
 	typedef boost::asio::executor_work_guard<boost::asio::io_context::executor_type> WorkGuard;
@@ -44,16 +43,9 @@ private :
 	boost::asio::signal_set d_signals;
 	WorkGuard               d_guard;
 
-	//std::shared_ptr<FrameGrabber>        d_grabber;
-	//std::shared_ptr<ProcessFrameTask>    d_process;
-	//std::shared_ptr<AcquisitionTask>     d_acquisition;
-
-	//for trigger mode
-
-	std::vector<std::shared_ptr<FrameGrabber>>        d_grabber;
-	std::vector<std::shared_ptr<ProcessFrameTask>>    d_process;
-	std::vector<std::shared_ptr<AcquisitionTask>>     d_acquisition;
-
+	std::shared_ptr<FrameGrabber>        d_grabber;
+	std::shared_ptr<ProcessFrameTask>    d_process;
+	std::shared_ptr<AcquisitionTask>     d_acquisition;
 
 
 	std::vector<std::thread>          d_threads;

@@ -22,10 +22,10 @@ namespace fort
 	{
 		uint8_t ncams = 1;
 
-		void Application::applicationrun(const Options &options)
+		void Application::applicationrun(const Options &options, bool UITask)
 		{
 			Application application(options);
-			application.Run();
+			application.Run(UITask);
 		}
 
 		void Application::Execute(int argc, char **argv)
@@ -39,19 +39,36 @@ namespace fort
 			InitGoogleLogging(argv[0], options.General);
 			InitGlobalDependencies();
 
-			Application application(options);
+			if (options.Camera.Triggermode != "none" && options.Camera.cameraID.empty())
+			{
+				auto options_0 = options;
+				options_0.Camera.cameraID = "0";
+				options_0.Camera.toDisplayFrame = true;
+				auto options_1 = options;
+				options_1.Camera.cameraID = "1";
+				options_1.Camera.toDisplayFrame = false;
+				auto options_2 = options;
+				options_2.Camera.cameraID = "2";
+				options_2.Camera.toDisplayFrame = false;
 
-			application.Run();
+				std::thread func_thread_0(applicationrun, options_0, true);
+				std::thread func_thread_1(applicationrun, options_1, false);
+				std::thread func_thread_2(applicationrun, options_2, false);
 
-			/*
-			std::thread func_thread(applicationrun,options);
-			std::thread func_thread2(applicationrun,options);
-			if (func_thread.joinable())
-				func_thread.join();
+				if (func_thread_0.joinable())
+					func_thread_0.join();
 
-			if (func_thread2.joinable())
-				func_thread2.join();
-			*/
+				if (func_thread_1.joinable())
+					func_thread_1.join();
+
+				if (func_thread_2.joinable())
+					func_thread_2.join();
+			}
+			else
+			{
+				Application application(options);
+				application.Run(true);
+			}
 		};
 
 		bool Application::InterceptCommand(const Options &options)
@@ -117,50 +134,37 @@ namespace fort
 
 		Application::Application(const Options &options) : d_signals(d_context, SIGINT), d_guard(d_context.get_executor())
 		{
-			if (options.Camera.Triggermode)
-				ncams = 3;
-			
-			for (uint8_t i = 0; i < ncams; i++)
-			{
-				if (options.Camera.Triggermode)
-				{
-					d_grabber.push_back(AcquisitionTask::LoadFrameGrabber(options.General.StubImagePaths, options.General.inputVideoPath,
-																		  options.Camera, std::to_string(i)));
-				}
-				else
-				{
-					d_grabber.push_back(AcquisitionTask::LoadFrameGrabber(options.General.StubImagePaths, options.General.inputVideoPath,
-																		  options.Camera));
-				}
+			d_grabber = AcquisitionTask::LoadFrameGrabber(options.General.StubImagePaths, options.General.inputVideoPath, options.Camera);
 
-				d_process.push_back(std::make_shared<ProcessFrameTask>(options,
-																	   d_context,
-																	   d_grabber.at(i)->Resolution()));
-			}
+			d_process = std::make_shared<ProcessFrameTask>(options, d_context, d_grabber->Resolution());
 
-			for (uint8_t i = 0; i < ncams; i++)
-				d_acquisition.push_back(std::make_shared<AcquisitionTask>(d_grabber.at(i), d_process.at(i)));
+			d_acquisition = std::make_shared<AcquisitionTask>(d_grabber, d_process);
 		}
 
-		void Application::SpawnTasks(uint8_t i)
+		void Application::SpawnTasks(bool UITask)
 		{
-			if (d_process.at(i)->FullFrameExportTask())
+
+			if (d_process->FullFrameExportTask())
 			{
-				d_threads.push_back(Task::Spawn(*d_process.at(i)->FullFrameExportTask(), 20));
+				d_threads.push_back(Task::Spawn(*d_process->FullFrameExportTask(), 20));
 			}
 
-			if (d_process.at(i)->VideoOutputTask())
+			if (d_process->VideoOutputTask())
 			{
-				d_threads.push_back(Task::Spawn(*d_process.at(i)->VideoOutputTask(), 0));
+				d_threads.push_back(Task::Spawn(*d_process->VideoOutputTask(), 0));
 			}
 
-			if (d_process.at(i)->UserInterfaceTask())
+			if (UITask)
 			{
-				d_threads.push_back(Task::Spawn(*d_process.at(i)->UserInterfaceTask(), 1));
+				if (d_process->UserInterfaceTask())
+				{
+					d_threads.push_back(Task::Spawn(*d_process->UserInterfaceTask(), 1));
+				}
 			}
+			
 
-			d_threads.push_back(Task::Spawn(*d_process.at(i), 0));
-			d_threads.push_back(Task::Spawn(*d_acquisition.at(i), 0));
+			d_threads.push_back(Task::Spawn(*d_process, 0));
+			d_threads.push_back(Task::Spawn(*d_acquisition, 0));
 		}
 
 		void Application::JoinTasks()
@@ -186,7 +190,7 @@ namespace fort
 									 LOG(INFO) << "Terminating (SIGINT)";
 
 									 for (uint8_t i = 0; i < ncams; i++)
-									 	d_acquisition.at(i)->Stop(); });
+									 	d_acquisition->Stop(); });
 			// starts the context in a single threads, and remind to join it
 			// once we got the SIGINT
 			d_ioThread = std::thread([this]()
@@ -196,13 +200,10 @@ namespace fort
 		                         LOG(INFO) << "[IOTask]: ended"; });
 		}
 
-		void Application::Run()
+		void Application::Run(bool UITask)
 		{
 			SpawnIOContext();
-
-			for (uint8_t i = 0; i < ncams; i++)
-				SpawnTasks(i);
-
+			SpawnTasks(UITask);
 			JoinTasks();
 		}
 

@@ -24,7 +24,7 @@ namespace fort
 			{
 				std::string DeviceIDstr;
 
-				if (options.Triggermode)
+				if (options.Triggermode != "none")
 				{
 					DeviceIDstr = "Device" + std::to_string(deviceIndex) + "Strobe";
 					d_cameraid = std::to_string(deviceIndex);
@@ -50,7 +50,7 @@ namespace fort
 				DeviceModelName = getString<RemoteModule>("DeviceModelName");
 				DLOG(INFO) << "DeviceModelName - " + DeviceModelName;
 
-				if (options.Triggermode)
+				if (options.Triggermode != "none")
 				{
 					std::string config = "../configs/" + DeviceModelName + ".js";
 

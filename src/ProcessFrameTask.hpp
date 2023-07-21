@@ -1,5 +1,7 @@
 #pragma once
 
+#include <fstream>
+
 #include <tbb/concurrent_queue.h>
 
 #include <opencv2/core.hpp>
@@ -71,6 +73,7 @@ private :
 	void SetUpDetectionTracking(const cv::Size & inputResolution,
 	                    const TrackingOptions & options);
 	void SetUpCataloguing(const ProcessOptions & options);
+	void SetUpTracing(const ProcessOptions& options);
 	void SetUpUserInterface(const cv::Size & workingresolution,
 	                        const cv::Size & fullresolution,
 	                        const Options & options);
@@ -99,6 +102,8 @@ private :
 
 	void CatalogAnt(const Frame::Ptr & frame,
 	                const hermes::FrameReadout & m);
+
+	void TraceAnts(const hermes::FrameReadout & m);
 
 	void ExportFullFrame(const Frame::Ptr & frame);
 
@@ -137,8 +142,10 @@ private :
 
 	ApriltagDetectorPtr               d_detector;
 
-	TrophallaxisDetectorPtr        	d_detectorTroph;
-	TrackingDetectorPtr        		d_detectorTrack;
+	TrophallaxisDetectorPtr        	  d_detectorTroph;
+	TrackingDetectorPtr               d_detectorTrack;
+
+	std::fstream                      d_ftrace;  //! Output CSV file for tracing detected Ants/Tags
 
 	Time                              d_nextFrameExport;
 	Time                              d_nextAntCatalog;

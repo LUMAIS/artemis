@@ -1,5 +1,7 @@
 #include "ProcessFrameTask.hpp"
 
+#include <filesystem>
+
 #include <tbb/parallel_for.h>
 
 #include <opencv2/imgproc.hpp>
@@ -24,6 +26,7 @@ namespace fort
 {
 	namespace artemis
 	{
+		namespace fs = std::filesystem;
 
 		ProcessFrameTask::ProcessFrameTask(const Options &options,
 										   boost::asio::io_context &context,
@@ -39,6 +42,7 @@ namespace fort
 			SetUpUserInterface(d_workingResolution, inputResolution, options);
 			SetUpVideoOutputTask(options.VideoOutput, context, options.General.LegacyMode);
 			SetUpCataloguing(options.Process);
+			SetUpTracing(options.Process);
 			SetUpPoolObjects();
 			SetUpConnection(options.Network, context);
 
@@ -127,6 +131,24 @@ namespace fort
 			d_nextFrameExport = d_nextAntCatalog.Add(10 * Duration::Second);
 
 			d_fullFrameExport = std::make_shared<artemis::FullFrameExportTask>(options.NewAntOutputDir);
+		}
+
+		void ProcessFrameTask::SetUpTracing(const ProcessOptions &options)
+		{
+			if (options.AntTraceFile.empty())
+				return;
+			// Fetch base dir
+ 			size_t pos = options.AntTraceFile.find_last_of("\\/");
+			std::string dir = std::string::npos == pos ? "" : options.AntTraceFile.substr(0, pos);
+			const fs::path  odp = dir;
+			std::error_code  ec;
+			if (!odp.empty() && !fs::exists(odp, ec)) {
+				if(ec || !fs::create_directories(odp, ec))
+					throw std::runtime_error("The output directory can't be created (" + std::to_string(ec.value()) + ": " + ec.message() + "): " + odp.string() + "\n");
+			}
+
+			d_ftrace = std::fstream(options.AntTraceFile, std::ios_base::out);
+			d_ftrace << "# FrameId TagId ObjCenterX ObjCenterY\n" << std::fixed << std::setprecision(2);
 		}
 
 		void ProcessFrameTask::SetUpConnection(const NetworkOptions &options,
@@ -292,6 +314,7 @@ namespace fort
 				}
 
 				CatalogAnt(frame, *m);
+				TraceAnts(*m);
 
 				ExportFullFrame(frame);
 
@@ -367,6 +390,14 @@ namespace fort
 			d_actualThreads = d_maximumThreads - 1;
 			cv::setNumThreads(d_actualThreads);
 			d_nextFrameExport = frame->Time().Add(d_options.ImageRenewPeriod);
+		}
+
+		void ProcessFrameTask::TraceAnts(const hermes::FrameReadout & m)
+		{
+			if (!d_ftrace)
+				return;
+			for (const auto &t : m.tags())
+				d_ftrace << m.frameid() << ' ' << t.id() << ' ' << t.x() << ' ' << t.y() << std::endl;  //  << m.timestamp()
 		}
 
 		void ProcessFrameTask::CatalogAnt(const Frame::Ptr &frame,

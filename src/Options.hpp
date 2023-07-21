@@ -143,6 +143,7 @@ struct ProcessOptions {
 
 
 	std::string NewAntOutputDir;
+	std::string AntTraceFile;
 	size_t      NewAntROISize;
 	Duration    ImageRenewPeriod;
 private:

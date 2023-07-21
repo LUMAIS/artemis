@@ -46,6 +46,7 @@ TEST_F(OptionsUTest,DefaultValues) {
 	EXPECT_EQ(options.Process.FrameStride,1);
 	EXPECT_TRUE(options.Process.FrameID.empty());
 	EXPECT_EQ(options.Process.NewAntOutputDir,"");
+	EXPECT_EQ(options.Process.AntTraceFile,"");
 	EXPECT_EQ(options.Process.NewAntROISize,600);
 	EXPECT_EQ(options.Process.ImageRenewPeriod,2 * Duration::Hour);
 	EXPECT_EQ(options.Process.UUID,"");
@@ -145,6 +146,11 @@ TEST_F(OptionsUTest,TestParse) {
 		   {{"artemis","--new-ant-output-dir", "foo"},
 		    [](const Options & options) {
 			    EXPECT_EQ(options.Process.NewAntOutputDir,"foo");
+		    }},
+
+		   {{"artemis","ant-tracing-file", "ant_tracing.ssv"},
+		    [](const Options & options) {
+			    EXPECT_EQ(options.Process.AntTraceFile,"ant_tracing.ssv");
 		    }},
 
 		   {{"artemis","--new-ant-roi-size", "600"},

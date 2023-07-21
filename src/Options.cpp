@@ -203,6 +203,7 @@ ProcessOptions::ProcessOptions()
 	, FrameID()
 	, UUID()
 	, NewAntOutputDir()
+	, AntTraceFile()
 	, NewAntROISize(600)
 	, ImageRenewPeriod(2 * Duration::Hour) {
 	d_imageRenewPeriod = ImageRenewPeriod.ToString();
@@ -212,6 +213,7 @@ void ProcessOptions::PopulateParser(options::FlagParser & parser) {
 	parser.AddFlag("frame-stride",FrameStride,"Frame sequence length");
 	parser.AddFlag("frame-ids",d_frameIDs,"Frame ID to consider in the frame sequence, if empty consider all");
 	parser.AddFlag("new-ant-output-dir",NewAntOutputDir,"Path where to save new detected ant pictures");
+	parser.AddFlag("ant-tracing-file",AntTraceFile,"Path where to save new detected ant pictures",'t');
 	parser.AddFlag("new-ant-roi-size", NewAntROISize, "Size of the image to save when a new ant is found");
 	parser.AddFlag("image-renew-period", d_imageRenewPeriod, "ant cataloguing and full frame export renew period");
 	parser.AddFlag("uuid", UUID,"The UUID to mark data sent over network");

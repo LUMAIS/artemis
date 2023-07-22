@@ -54,15 +54,11 @@ arch='';
 case $lcp in
 	1)
 		wget -P /tmp/ $libtorch_CPU
-        	arch=$(basename $libtorch_CPU)
+		arch=$(basename $libtorch_CPU)
 	;;
 	2)
 		wget -P /tmp/ $libtorch_CUDA
-<<<<<<< HEAD
-        	arch=$(basename $libtorch_CUDA)
-=======
-        arch=$(basename $libtorch_CUDA)
->>>>>>> 12a461372472f08cfa93bd2792bcdd46828b8d84
+		arch=$(basename $libtorch_CUDA)
 	;;
 	*)
 		:
@@ -73,6 +69,4 @@ arch=${arch//'%2B'/'+'}
 mkdir $libtorch_path
 unzip /tmp/$arch -d $libtorch_path
 mkdir build
-cd build
-cmake ..
-cmake --build ./
+cd build && cmake .. && cmake --build . --config Release -j 4

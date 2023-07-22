@@ -3,10 +3,22 @@ cmake_policy(SET CMP0048 NEW)
 project(artemis VERSION 0.4.4
                 LANGUAGES C CXX)
 
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.14)
+
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+if(NOT DEFINED ${CMAKE_CUDA_COMPILER})
+    set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
+endif()
+message(DEBUG "CMAKE_CUDA_COMPILER: ${CMAKE_CUDA_COMPILER}")
+if(NOT DEFINED ${CMAKE_CUDA_ARCHITECTURES})
+    set(CMAKE_CUDA_ARCHITECTURES all)
+endif()
+message(DEBUG "CMAKE_CUDA_ARCHITECTURES: ${CMAKE_CUDA_ARCHITECTURES}")
 
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
-
 
 
 include(FetchGoogleTest)
@@ -76,8 +88,18 @@ enable_make_check()
 add_subdirectory(scripts)
 add_subdirectory(src)
 
-file(COPY data DESTINATION ${PROJECT_BINARY_DIR}/)
-file(COPY configs DESTINATION ${PROJECT_BINARY_DIR}/)
+# file(COPY data DESTINATION ${PROJECT_BINARY_DIR}/)
+# file(COPY configs DESTINATION ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/)
 
+# file(CREATE_LINK <original> <linkname> [RESULT <result>] [COPY_ON_ERROR] [SYMBOLIC])
+foreach(DATA configs data)
+    message(STATUS "Transferring to the binaries: DATA=${DATA} to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/")
+    file(CREATE_LINK ${PROJECT_SOURCE_DIR}/${DATA}
+        ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${DATA}
+        RESULT errcode COPY_ON_ERROR SYMBOLIC)
+    if(${errcode})
+        message(SEND_ERROR "Resource (${DATA}) transfer to the target directory (${PROJECT_BINARY_DIR}) failed: ${errcode}")
+    endif()
+endforeach()
 
 #add_subdirectory(src/trophallaxis)

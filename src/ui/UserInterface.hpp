@@ -31,7 +31,6 @@ public:
 		size_t     VideoOutputProcessed;
 		size_t     VideoOutputDropped;
 		std::string	   CameraID;
-		size_t 	RenderHeight;
 	};
 
 	typedef tbb::concurrent_queue<cv::Rect> ROIChannel;

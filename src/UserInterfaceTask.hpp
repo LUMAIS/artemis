@@ -37,7 +37,7 @@ private:
 
 	std::unique_ptr<UserInterface> d_ui;
 	const cv::Size                 d_workingResolution,d_fullResolution;
-	const Options                  d_options;
+	const Options&                 d_options;
 	const cv::Rect                 d_defaultROI;
 	UserInterface::ROIChannelPtr   d_roiChannel;
 

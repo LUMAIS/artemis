@@ -1,3 +1,5 @@
+#include <unistd.h>
+
 #include "UserInterfaceTask.hpp"
 
 #include "ui/GLUserInterface.hpp"

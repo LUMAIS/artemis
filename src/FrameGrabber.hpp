@@ -23,7 +23,6 @@ public:
 	virtual size_t Height() const = 0;
 	virtual std::string CameraID() const = 0;
 	virtual uint64_t EventCount() const = 0;
-	virtual size_t RenderHeight() const = 0;
 	virtual uint64_t Timestamp() const = 0;
 	virtual uint64_t ID() const = 0;
 	virtual const cv::Mat & ToCV() = 0;

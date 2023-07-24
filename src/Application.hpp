@@ -43,7 +43,6 @@ private :
 	boost::asio::signal_set d_signals;
 	WorkGuard               d_guard;
 
-	std::shared_ptr<FrameGrabber>        d_grabber;
 	std::shared_ptr<ProcessFrameTask>    d_process;
 	std::shared_ptr<AcquisitionTask>     d_acquisition;
 

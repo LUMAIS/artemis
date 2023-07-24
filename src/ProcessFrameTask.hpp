@@ -156,7 +156,7 @@ private :
 	size_t              d_frameDropped;
 	size_t              d_frameProcessed;
 	Time                d_start;
-	bool                d_todisplayframe;
+	bool                d_todisplayframe;  //! Whether the frame should be displayed
 };
 
 } // namespace artemis

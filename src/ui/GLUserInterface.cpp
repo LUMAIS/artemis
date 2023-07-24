@@ -18,11 +18,10 @@
 
 #include "../Utils.hpp"
 
-//-----------------------------
 #include <opencv2/imgproc.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/highgui.hpp> 
-//-----------------------------
+
 
 #if (GLFW_VERSION_MAJOR * 100 + GLFW_VERSION_MINOR) < 303
 #define IMPLEMENT_GLFW_GET_ERROR 1
@@ -87,7 +86,9 @@ GLUserInterface::GLUserInterface(const cv::Size & workingResolution,
 	, d_windowSize(workingResolution)
 	, d_currentScaleFactor(0)
 	, d_currentPOI(fullSize.width/2,fullSize.height/2)
-	, d_ROISize(options.Process.NewAntROISize){
+	, d_ROISize(options.Process.NewAntROISize)
+	, d_renderHeight(1080)  // options.Display.RenderHeight
+{
 
 #ifdef IMPLEMENT_GLFW_GET_ERROR
 	glfwSetErrorCallback(&GLFWErrorCallback);
@@ -542,16 +543,16 @@ void GLUserInterface::DrawMovieFrame(const DrawBuffer & buffer) {
 
 void GLUserInterface::DrawMovieFrameOpenCV(const DrawBuffer & buffer) {
 	
-	if(buffer.Frame.RenderHeight != 0)
+	if(d_renderHeight)
 	{
 		cv::Mat Drawframe;
-    	if(buffer.Frame.RenderHeight < buffer.Frame.Full->cols)
+    	if(d_renderHeight < buffer.Frame.Full->rows)
 		{
-			float k = (float)buffer.Frame.Full->cols/buffer.Frame.RenderHeight;
-			size_t RenderWith = buffer.Frame.Full->rows/k;
-			resize(*buffer.Frame.Full,Drawframe, cv::Size(buffer.Frame.RenderHeight, RenderWith), cv::INTER_LINEAR);
+			float k = (float)d_renderHeight / buffer.Frame.Full->rows;
+			uint RenderWith = round(buffer.Frame.Full->cols * k);
+			resize(*buffer.Frame.Full, Drawframe, cv::Size(RenderWith, d_renderHeight), cv::INTER_LINEAR);  // INTER_NEAREST
 			cv::imshow("Camera" + buffer.Frame.CameraID, Drawframe);
-   	    	cv::waitKey(100);
+   	    	cv::waitKey(100);  // time in ms; required for HighGui to process redraw, resizing, input event, etc.
 		}
 		/*else
 			Drawframe = *buffer.Frame.Full;

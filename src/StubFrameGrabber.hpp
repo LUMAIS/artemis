@@ -10,7 +10,7 @@ namespace artemis {
 
 class StubFrame : public Frame {
 public :
-	StubFrame(const cv::Mat & mat, uint64_t ID, std::string CameraID, size_t RenderHeight);
+	StubFrame(const cv::Mat & mat, uint64_t ID, std::string CameraID);
 	virtual ~StubFrame();
 
 	virtual void * Data();
@@ -18,7 +18,6 @@ public :
 	virtual size_t Height() const;
 	virtual std::string CameraID() const;
 	virtual uint64_t EventCount() const;
-	virtual size_t RenderHeight() const;
 	virtual uint64_t Timestamp() const;
 	virtual uint64_t ID() const;
 	const cv::Mat & ToCV();
@@ -26,7 +25,6 @@ private :
 	uint64_t d_ID,d_eventcount;
 	cv::Mat d_mat;
 	std::string d_cameraid;
-	size_t d_renderheight;
 };
 
 
@@ -50,7 +48,6 @@ private:
 	Time                 d_last;
 	Duration             d_period;
 	std::string 		 d_cameraid;
-	size_t				 d_renderheight;
 };
 
 

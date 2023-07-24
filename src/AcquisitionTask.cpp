@@ -1,5 +1,7 @@
 #include "AcquisitionTask.hpp"
 
+#include <filesystem>
+#include <glog/logging.h>
 #include <artemis-config.h>
 #ifndef FORCE_STUB_FRAMEGRABBER_ONLY
 #include "EuresysFrameGrabber.hpp"
@@ -9,19 +11,19 @@
 
 #include "ProcessFrameTask.hpp"
 
-#include <glog/logging.h>
-
 namespace fort
 {
 	namespace artemis
 	{
+		namespace fs = std::filesystem;
+
 		std::string triggermode = "none";
 		std::string tofile;
-		uint renderheight;
-		double opt_fps;
+		uint vidH = 0;
+		double opt_fps = 0;
 
 		FrameGrabber::Ptr AcquisitionTask::LoadFrameGrabber(const std::vector<std::string> &stubImagePaths, std::string inputVideoPath,
-															const CameraOptions &options, std::string cameraID)
+															const CameraOptions &options, const VideoOutputOptions & vidOpts, std::string cameraID)
 		{
 #ifndef FORCE_STUB_FRAMEGRABBER_ONLY
 			if (stubImagePaths.empty() && inputVideoPath.length() == 0)
@@ -35,9 +37,22 @@ namespace fort
 				bool deviceinit = false;
 
 				triggermode = options.Triggermode;
-				renderheight = options.RenderHeight;
-				tofile = options.ToFile; // frames will be saved to a file
 				opt_fps = options.FPS;
+				vidH = vidOpts.Height;
+				tofile = vidOpts.ToFile; // frames will be saved to a file
+
+				if (!tofile.empty()) {
+					// Ensure that the output directory exists
+					// Fetch base dir
+					size_t pos = tofile.find_last_of("\\/");
+					std::string dir = std::string::npos == pos ? "" : tofile.substr(0, pos);
+					const fs::path  odp = dir;
+					std::error_code  ec;
+					if (!odp.empty() && !fs::exists(odp, ec)) {
+						if(ec || !fs::create_directories(odp, ec))
+							throw std::runtime_error("The output directory can't be created (" + std::to_string(ec.value()) + ": " + ec.message() + "): " + odp.string() + "\n");
+					}
+				}
 
 				gc::TL_HANDLE tl = egentl.tlOpen();
 				uint32_t numInterfaces = egentl.tlGetNumInterfaces(tl);
@@ -126,20 +141,27 @@ namespace fort
 			d_grabber->Start();
 			bool ptrframe = true;
 			std::vector<std::tuple<cv::Mat, uint64_t, uint64_t>> fbuf;
+#ifdef HAVE_OPENCV_CUDACODEC
+#else
+#endif // HAVE_OPENCV_CUDACODEC
+			cv::VideoWriter writer;
 
 			bool mp4conf = false;
 			std::string video_filename;
-			cv::VideoWriter writer;
 			int codec = cv::VideoWriter::fourcc('M', 'P', '4', 'V');
 			cv::Size sizeFrame;
 			double fps = opt_fps;
-			uint8_t nt = 3;
+			uint8_t nt = 3;  // The number of cashed initial frames used to evaluate FPS
 
 			while (d_quit.load() == false && ptrframe == true)
 			{
 				Frame::Ptr f = d_grabber->NextFrame();
-				if (tofile.length() > 0)
-					video_filename = tofile + "_cam_id_" + f->CameraID() + ".mp4";
+				if (!tofile.empty())
+					video_filename = tofile + "_CamId-" + f->CameraID() + ".mp4";
+
+				const cv::Size  sz = vidH > 0
+					? cv::Size(round((double)vidH / f->Height() * f->Width()), vidH)
+					: cv::Size(f->Width(), f->Height());
 
 				if (triggermode != "none")
 				{
@@ -158,7 +180,7 @@ namespace fort
 
 					DLOG(INFO) << "CameraID - " << f->CameraID() << " | EventCount - " << f->EventCount() << std::endl;
 
-					if (tofile.length() > 0)
+					if (!tofile.empty())
 					{
 						if (mp4conf == false)
 						{
@@ -168,20 +190,22 @@ namespace fort
 							}
 							else
 							{
-								fps = (double)fbuf.size() / ((std::get<1>(fbuf.at(fbuf.size() - 1)) - std::get<1>(fbuf.at(0))) / 1000000.0);
-								writer.open(video_filename, codec, fps, cv::Size(renderheight, renderheight), true);
+								fps = (double)fbuf.size() / ((std::get<1>(fbuf.back()) - std::get<1>(fbuf.front())) / 1E6);
+								writer.open(video_filename, codec, fps, sz, f->ToCV().channels() > 1);
 								mp4conf = true;
 
 								for (int8_t i = 0; i < fbuf.size(); i++)
 								{
 									cv::Mat frame;
 									std::get<0>(fbuf.at(i)).copyTo(frame);
-									cv::cvtColor(frame, frame, cv::COLOR_BGR2RGB);
-									frame.convertTo(frame, CV_8UC3);
-									if (renderheight > 0)
-										cv::resize(frame, frame, cv::Size(renderheight, renderheight), cv::InterpolationFlags::INTER_CUBIC);
+									if(frame.channels() > 1) {
+										cv::cvtColor(frame, frame, cv::COLOR_BGR2RGB);
+										assert(frame.type() == CV_8UC3 && "Unexpexted frame type");
+									}
+									if (vidH != frame.rows)
+										cv::resize(frame, frame, sz, cv::InterpolationFlags::INTER_CUBIC);
 
-									cv::rectangle(frame, pt1, pt2, cv::Scalar(0, 0, 0), cv::FILLED);
+									cv::rectangle(frame, pt1, pt2, cv::Scalar::all(0), cv::FILLED);
 
 									std::string str = "EventCount: " + std::to_string(std::get<2>(fbuf.at(i)));
 									cv::putText(frame, // target image
@@ -189,7 +213,7 @@ namespace fort
 												pt,	   // top-left position
 												1,
 												1,
-												cv::Scalar(255, 255, 255), // font color
+												cv::Scalar::all(255), // font color
 												1);
 
 									writer.write(frame);
@@ -200,20 +224,23 @@ namespace fort
 						{
 							cv::Mat frame;
 							f->ToCV().copyTo(frame);
-							cv::cvtColor(frame, frame, cv::COLOR_BGR2RGB);
-							frame.convertTo(frame, CV_8UC3);
+							if(frame.channels() > 1) {
+								cv::cvtColor(frame, frame, cv::COLOR_BGR2RGB);
+								assert(frame.type() == CV_8UC3 && "Unexpexted frame type");
+							}
 
-							if (renderheight > 0)
-								cv::resize(frame, frame, cv::Size(renderheight, renderheight), cv::InterpolationFlags::INTER_CUBIC);
+							if (vidH != frame.rows)
+								cv::resize(frame, frame, sz, cv::InterpolationFlags::INTER_CUBIC);
 
-							cv::rectangle(frame, pt1, pt2, cv::Scalar(0, 0, 0), cv::FILLED);
+							cv::rectangle(frame, pt1, pt2, cv::Scalar::all(0), cv::FILLED);
+							
 							std::string str = "EventCount: " + std::to_string(f->EventCount());
 							cv::putText(frame, // target image
 										str,   // text
 										pt,	   // top-left position
 										1,
 										1,
-										cv::Scalar(255, 255, 255), // font color
+										cv::Scalar::all(255), // font color
 										1);
 
 							writer.write(frame);
@@ -225,23 +252,25 @@ namespace fort
 				}
 				else
 				{
-					if (tofile.length() > 0)
+					if (!tofile.empty())
 					{
 						if (mp4conf == true)
 						{
 							cv::Mat frame;
 							f->ToCV().copyTo(frame);
-							cv::cvtColor(frame, frame, cv::COLOR_BGR2RGB);
-							frame.convertTo(frame, CV_8UC3);
+							if(frame.channels() > 1) {
+								cv::cvtColor(frame, frame, cv::COLOR_BGR2RGB);
+								assert(frame.type() == CV_8UC3 && "Unexpexted frame type");
+							}
 
-							if (renderheight > 0)
-								cv::resize(frame, frame, cv::Size(renderheight, renderheight), cv::InterpolationFlags::INTER_CUBIC);
+							if (vidH != frame.rows)
+								cv::resize(frame, frame, sz, cv::InterpolationFlags::INTER_CUBIC);
 
 							writer.write(frame);
 						}
 						else
 						{
-							writer.open(video_filename, codec, opt_fps, cv::Size(renderheight, renderheight), true);
+							writer.open(video_filename, codec, opt_fps, sz, f->ToCV().channels() > 1);
 							mp4conf = true;
 						}
 					}

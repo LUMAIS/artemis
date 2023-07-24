@@ -70,3 +70,5 @@ mkdir $libtorch_path
 unzip /tmp/$arch -d $libtorch_path
 mkdir build
 cd build && cmake .. && cmake --build . --config Release -j 4
+# Manual execution of cmake:
+# cmake -DCMAKE_CUDA_ARCHITECTURES=all -DCUDAToolkit_ROOT=/usr/local/cuda -DCMAKE_CUDA_COMPILER=/usr/local/cuda/bin/nvcc -DOpenCV_DIR=/opt/xdk/opencv/build -DTORCH_INSTALL_PREFIX=/opt/xdk/libtorch-cxx11-gpu -DTorch_DIR=/opt/xdk/libtorch-cxx11-gpu/share/cmake/Torch ..

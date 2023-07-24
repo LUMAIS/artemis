@@ -11,7 +11,7 @@ namespace fort
 
 		EuresysFrameGrabber::EuresysFrameGrabber(Euresys::EGenTL &gentl,
 												 const CameraOptions &options, int &interfaceIndex, int &deviceIndex)
-			: Euresys::EGrabber<Euresys::CallbackOnDemand>(gentl, interfaceIndex, deviceIndex), d_lastFrame(0), d_toAdd(0), d_width(0), d_height(0), d_renderheight(0), d_cameraid("0"), d_eventcount(0)
+			: Euresys::EGrabber<Euresys::CallbackOnDemand>(gentl, interfaceIndex, deviceIndex), d_lastFrame(0), d_toAdd(0), d_width(0), d_height(0), d_cameraid("0"), d_eventcount(0)
 		{
 
 			using namespace Euresys;
@@ -115,15 +115,10 @@ namespace fort
 				d_height = options.SlaveHeight;
 			}
 
-			d_renderheight = d_height;
-
-			if (options.RenderHeight > 0 && options.RenderHeight < d_height)
-				d_renderheight = options.RenderHeight;
-
 			DLOG(INFO) << "Enable Event";
 			enableEvent<NewBufferData>();
 			DLOG(INFO) << "Realloc Buffer";
-			reallocBuffers(4);
+			reallocBuffers(4);  // TODO: Clarify why 4 and whether it should be different in the triggering mode
 		}
 
 		void EuresysFrameGrabber::Start()
@@ -179,11 +174,11 @@ namespace fort
 		void EuresysFrameGrabber::onNewBufferEvent(const Euresys::NewBufferData &data)
 		{
 			std::unique_lock<std::mutex> lock(d_mutex);
-			d_frame = std::make_shared<EuresysFrame>(*this, data, d_lastFrame, d_toAdd, d_renderheight, d_cameraid, d_eventcount);
+			d_frame = std::make_shared<EuresysFrame>(*this, data, d_lastFrame, d_toAdd, d_cameraid, d_eventcount);
 		}
 
-		EuresysFrame::EuresysFrame(Euresys::EGrabber<Euresys::CallbackOnDemand> &grabber, const Euresys::NewBufferData &data, uint64_t &lastFrame, uint64_t &toAdd, size_t &RenderHeight, std::string CameraID, uint64_t EventCount)
-			: Euresys::ScopedBuffer(grabber, data), d_renderheight(RenderHeight), d_cameraid(CameraID), d_eventcount(EventCount), d_width(getInfo<size_t>(GenTL::BUFFER_INFO_WIDTH)), d_height(getInfo<size_t>(GenTL::BUFFER_INFO_HEIGHT)), d_timestamp(getInfo<uint64_t>(GenTL::BUFFER_INFO_TIMESTAMP)), d_ID(getInfo<uint64_t>(GenTL::BUFFER_INFO_FRAMEID)), d_mat(d_height, d_width, CV_8U, getInfo<void *>(GenTL::BUFFER_INFO_BASE))
+		EuresysFrame::EuresysFrame(Euresys::EGrabber<Euresys::CallbackOnDemand> &grabber, const Euresys::NewBufferData &data, uint64_t &lastFrame, uint64_t &toAdd, std::string CameraID, uint64_t EventCount)
+			: Euresys::ScopedBuffer(grabber, data), d_cameraid(CameraID), d_eventcount(EventCount), d_width(getInfo<size_t>(GenTL::BUFFER_INFO_WIDTH)), d_height(getInfo<size_t>(GenTL::BUFFER_INFO_HEIGHT)), d_timestamp(getInfo<uint64_t>(GenTL::BUFFER_INFO_TIMESTAMP)), d_ID(getInfo<uint64_t>(GenTL::BUFFER_INFO_FRAMEID)), d_mat(d_height, d_width, CV_8U, getInfo<void *>(GenTL::BUFFER_INFO_BASE))
 		{
 			if (d_ID == 0 && lastFrame != 0)
 			{
@@ -212,11 +207,6 @@ namespace fort
 		uint64_t EuresysFrame::EventCount() const
 		{
 			return d_eventcount;
-		}
-
-		size_t EuresysFrame::RenderHeight() const
-		{
-			return d_renderheight;
 		}
 
 		uint64_t EuresysFrame::Timestamp() const

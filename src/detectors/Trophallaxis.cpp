@@ -9,19 +9,25 @@ using std::chrono::system_clock;
 
 std::vector<cv::Point2f> detectorT (torch::jit::script::Module module, cv::Mat frame, torch::DeviceType device_type)
 {
-  int resolution = 992;
-  int pointsdelta = 30;
+  const int  szml = 992;  // ML model resolution; TODO: make it a UI argument or fetch automatically from the ML model
+  int  pointsdelta = 30;
   std::vector<cv::Point2f> detects;
   std::vector<cv::Point2f> detectsbuf;
-  cv::Mat imageBGR;
+  cv::Mat img;
   
-  frame.copyTo(imageBGR);
+  // Note: input frame is either gray-scale or color in BGR (OpenCV-native format), but YOLO/Torch expect RGB image in float format
+  frame.copyTo(img);
   
-  cv::resize(imageBGR, imageBGR,cv::Size(992, 992),cv::InterpolationFlags::INTER_CUBIC);
+  cv::resize(img, img, cv::Size(szml, szml),cv::InterpolationFlags::INTER_CUBIC);
 
-  cv::cvtColor(imageBGR, imageBGR, cv::COLOR_BGR2RGB);
-  imageBGR.convertTo(imageBGR, CV_32FC3, 1.0f / 255.0f);
-  auto input_tensor = torch::from_blob(imageBGR.data, {1, imageBGR.rows, imageBGR.cols, 3});
+  if(img.channels() == 1) {
+    cv::cvtColor(img, img, cv::COLOR_GRAY2RGB);
+  } else {
+    assert(img.type() == CV_8UC3 && "Color input frames in the BGR (OpenCV-native) format is expected");
+    cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
+  }
+  img.convertTo(img, CV_32FC3, 1.0f / 255.0f);
+  auto input_tensor = torch::from_blob(img.data, {1, img.rows, img.cols, 3});
   input_tensor = input_tensor.permute({0, 3, 1, 2}).contiguous();
   input_tensor = input_tensor.to(device_type);
   //----------------------------------
@@ -66,10 +72,10 @@ std::vector<cv::Point2f> detectorT (torch::jit::script::Module module, cv::Mat f
 
         for (size_t i=0; i < det.size(0); ++ i)
         {
-            float left = det[i][0].item().toFloat() * imageBGR.cols / resolution;
-            float top = det[i][1].item().toFloat() * imageBGR.rows / resolution;
-            //float right = det[i][2].item().toFloat() * imageBGR.cols / resolution;
-            //float bottom = det[i][3].item().toFloat() * imageBGR.rows / resolution;
+            float left = det[i][0].item().toFloat() * img.cols / szml;
+            float top = det[i][1].item().toFloat() * img.rows / szml;
+            //float right = det[i][2].item().toFloat() * img.cols / szml;
+            //float bottom = det[i][3].item().toFloat() * img.rows / szml;
             detectsbuf.push_back(cv::Point(left,top));
         }
   }

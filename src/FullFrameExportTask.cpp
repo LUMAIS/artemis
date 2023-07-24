@@ -50,6 +50,10 @@ void FullFrameExportTask::ExportFrame(const std::string & dir,
 	std::ostringstream oss;
 	oss << dir << "/frame_" << frame->ID() << ".png";
 	LOG(INFO) << "Exporting to "  << oss.str();
+
+#ifdef HAVE_OPENCV_CUDACODEC
+#else
+#endif // HAVE_OPENCV_CUDACODEC
 	cv::imwrite(oss.str(),frame->ToCV());
 	LOG(INFO) << "Done";
 }

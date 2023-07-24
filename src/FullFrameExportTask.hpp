@@ -10,6 +10,7 @@
 namespace fort {
 namespace artemis {
 
+//! Full frame export as an image (.png)
 class FullFrameExportTask : public Task {
 public:
 	FullFrameExportTask(const std::string & dir);

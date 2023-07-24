@@ -82,7 +82,7 @@ namespace fort
 			if (options.General.PrintResolution == true)
 			{
 				auto resolution = AcquisitionTask::LoadFrameGrabber(options.General.StubImagePaths, options.General.inputVideoPath,
-																	options.Camera)
+																	options.Camera, options.VideoOutput)
 									  ->Resolution();
 				std::cout << resolution.width << " " << resolution.height << std::endl;
 				return true;
@@ -134,11 +134,12 @@ namespace fort
 
 		Application::Application(const Options &options) : d_signals(d_context, SIGINT), d_guard(d_context.get_executor())
 		{
-			d_grabber = AcquisitionTask::LoadFrameGrabber(options.General.StubImagePaths, options.General.inputVideoPath, options.Camera);
+			// Fetch frame grabbing interface (per each camera)
+			std::shared_ptr<FrameGrabber>  grabber = AcquisitionTask::LoadFrameGrabber(options.General.StubImagePaths, options.General.inputVideoPath, options.Camera, options.VideoOutput);
 
-			d_process = std::make_shared<ProcessFrameTask>(options, d_context, d_grabber->Resolution());
-
-			d_acquisition = std::make_shared<AcquisitionTask>(d_grabber, d_process);
+			// Define processing tasks per each grabber interface
+			d_process = std::make_shared<ProcessFrameTask>(options, d_context, grabber->Resolution());
+			d_acquisition = std::make_shared<AcquisitionTask>(grabber, d_process);
 		}
 
 		void Application::SpawnTasks(bool UITask)
@@ -146,7 +147,13 @@ namespace fort
 
 			if (d_process->FullFrameExportTask())
 			{
-				d_threads.push_back(Task::Spawn(*d_process->FullFrameExportTask(), 20));
+				d_threads.push_back(Task::Spawn(*d_process->FullFrameExportTask(),
+#ifdef HAVE_OPENCV_CUDACODEC
+					1
+#else
+					20
+#endif // HAVE_OPENCV_CUDACODEC
+				));
 			}
 
 			if (d_process->VideoOutputTask())

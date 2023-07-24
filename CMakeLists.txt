@@ -5,8 +5,8 @@ project(artemis VERSION 0.4.4
 
 cmake_minimum_required(VERSION 3.14)
 
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/arc)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 if(NOT DEFINED ${CMAKE_CUDA_COMPILER})
@@ -93,6 +93,7 @@ add_subdirectory(src)
 
 # file(CREATE_LINK <original> <linkname> [RESULT <result>] [COPY_ON_ERROR] [SYMBOLIC])
 foreach(DATA configs data)
+    # IF(EXISTS ${DATA})
     message(STATUS "Transferring to the binaries: DATA=${DATA} to ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/")
     file(CREATE_LINK ${PROJECT_SOURCE_DIR}/${DATA}
         ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${DATA}
@@ -100,6 +101,7 @@ foreach(DATA configs data)
     if(${errcode})
         message(SEND_ERROR "Resource (${DATA}) transfer to the target directory (${PROJECT_BINARY_DIR}) failed: ${errcode}")
     endif()
+    # endif()
 endforeach()
 
 #add_subdirectory(src/trophallaxis)

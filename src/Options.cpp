@@ -170,27 +170,36 @@ void NetworkOptions::FinishParse() {}
 VideoOutputOptions::VideoOutputOptions()
 	: Height(1080)
 	, AddHeader(false)
-	, ToStdout(false) {
+	, ToStdout(false)
+{
 }
 
 void VideoOutputOptions::PopulateParser(options::FlagParser & parser) {
-	parser.AddFlag("video-output-to-stdout", ToStdout, "Sends video output to stdout");
-	parser.AddFlag("video-output-height", Height, "Video Output height (width computed to maintain aspect ratio");
-	parser.AddFlag("video-output-add-header", AddHeader, "Adds binary header to stdout output");
+	// General options
+	parser.AddFlag("video-output-height", Height, "Video Output height, width computed to maintain the aspect ratio, 0 means use frame height ");
+	parser.AddFlag("video-output-file", ToFile, "Sends video output to file(s) with this basename, automatically adding the suffix \"_CamId-<CamId>.mp4\" ");
+	// Video stdout options
+	parser.AddFlag("video-output-stdout", ToStdout, "Sends video output to stdout");
+	parser.AddFlag("video-output-stdout-header", AddHeader, "Adds binary header to stdout output");
 }
 
 void VideoOutputOptions::FinishParse() {
 }
 
 cv::Size VideoOutputOptions::WorkingResolution(const cv::Size & input) const {
-	return cv::Size(input.width * double(Height) / double(input.height),Height);
+	return Height ? cv::Size(input.width * double(Height) / double(input.height),Height) : input;
 }
 
-DisplayOptions::DisplayOptions() {
+DisplayOptions::DisplayOptions()
+	: NoGUI(false)
+	// , RenderHeight(0)
+{
 }
 
 void DisplayOptions::PopulateParser(options::FlagParser & parser) {
-		parser.AddFlag("highlight-tags",d_highlighted,"Tag to highlight when drawing detections");
+	parser.AddFlag("no-gui", NoGUI, "Disable GUI");
+	// parser.AddFlag("rendering-height", RenderHeight, "Rendering height of OpenCV windows");
+	parser.AddFlag("highlight-tags",d_highlighted,"Tag to highlight when drawing detections");
 }
 
 void DisplayOptions::FinishParse() {
@@ -231,7 +240,9 @@ CameraOptions::CameraOptions()
 	, Triggermode("none")
 	, StrobeDuration(1500 * Duration::Microsecond)
 	, StrobeDelay(0) 
-	, ToFile("") {
+	, SlaveWidth(0)
+	, SlaveHeight(0)
+{
 	d_strobeDuration = StrobeDuration.ToString();
 	d_strobeDelay = StrobeDelay.ToString();
 }
@@ -240,12 +251,10 @@ void CameraOptions::PopulateParser(options::FlagParser & parser)  {
 	parser.AddFlag("camera-fps",FPS,"Camera FPS to use");
 	parser.AddFlag("camera-id", cameraID, "Сamera ID");
 	parser.AddFlag("trigger-mode", Triggermode, "Use a trigger to get a frame sequential/parallel");
-	parser.AddFlag("rendering-height", RenderHeight, "Rendering height of OpenCV windows");
 	parser.AddFlag("camera-slave-width",SlaveWidth,"Camera Width argument for slave mode");
 	parser.AddFlag("camera-slave-height",SlaveHeight,"Camera Height argument for slave mode");
 	parser.AddFlag("camera-strobe",d_strobeDuration,"Camera Strobe duration");
 	parser.AddFlag("camera-strobe-delay",d_strobeDelay,"Camera Strobe delay");
-	parser.AddFlag("video-output-to-file", ToFile, "Sends video output to file .mp4 (indicate only the name of the file without extension: .mp4, .avi, etc.)");
 }
 
 void CameraOptions::FinishParse() {

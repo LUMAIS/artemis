@@ -39,7 +39,8 @@ namespace fort
 			SetUpDetection(inputResolution, options.Apriltag);
 			SetUpDetectionTrophallaxis(inputResolution, options.Trophallaxis);
 			SetUpDetectionTracking(inputResolution, options.Tracking);
-			SetUpUserInterface(d_workingResolution, inputResolution, options);
+			if(!options.Display.NoGUI)
+				SetUpUserInterface(d_workingResolution, inputResolution, options);
 			SetUpVideoOutputTask(options.VideoOutput, context, options.General.LegacyMode);
 			SetUpCataloguing(options.Process);
 			SetUpTracing(options.Process);
@@ -360,19 +361,25 @@ namespace fort
 		void ProcessFrameTask::Detect(const Frame::Ptr &frame,
 									  hermes::FrameReadout &m)
 		{
+			// Note: all detectors expect grayscale frames
+			cv::Mat framebuf = frame->ToCV();
+			assert(framebuf.type() == CV_8UC1 && "Grayscale input frames are expected");
+			// if(framebuf.channels() == 3) // frame.type() == CV_8UC3
+			// 	cv::cvtColor(framebuf, framebuf, cv::COLOR_BGR2GRAY);
+
 			if (d_detector)
 			{
-				d_detector->Detect(frame->ToCV(), d_actualThreads, m);
+				d_detector->Detect(framebuf, d_actualThreads, m);
 			}
 
 			if (d_detectorTroph)
 			{
-				d_detectorTroph->Detect(frame->ToCV(), m);
+				d_detectorTroph->Detect(framebuf, m);
 			}
 
 			if (d_detectorTrack)
 			{
-				d_detectorTrack->Detect(frame->ToCV(), m);
+				d_detectorTrack->Detect(framebuf, m);
 			}
 		}
 
@@ -398,6 +405,7 @@ namespace fort
 				return;
 			for (const auto &t : m.tags())
 				d_ftrace << m.frameid() << ' ' << t.id() << ' ' << t.x() << ' ' << t.y() << std::endl;  //  << m.timestamp()
+			// LOG(INFO) << "[ProcessFrameTask]: d_ftrace updated with tags: " << m.tags().size();
 		}
 
 		void ProcessFrameTask::CatalogAnt(const Frame::Ptr &frame,
@@ -471,6 +479,8 @@ namespace fort
 
 		void ProcessFrameTask::DisplayFrame(const Frame::Ptr frame, const std::shared_ptr<hermes::FrameReadout> &m)
 		{
+			if(!d_userInterface)
+				return;
 
 			d_wantedROI = d_userInterface->UpdateROI(d_wantedROI);
 			std::shared_ptr<cv::Mat> zoomed;
@@ -480,17 +490,6 @@ namespace fort
 				cv::Size size = frame->ToCV().size();
 				cv::resize(cv::Mat(frame->ToCV(), d_wantedROI), *zoomed, d_workingResolution, 0, 0, cv::INTER_NEAREST);
 			}
-
-			/*
-			size_t RenderHeight;
-			if(frame->RenderHeight() > frame->Height() || frame->RenderHeight() < 0)
-				RenderHeight = 0;
-			else
-				RenderHeight =  frame->RenderHeight();*/
-
-			// DLOG(INFO) << "[ProcessFrameTask]: CameraID - "<<frame->CameraID();
-			// DLOG(INFO) << "[ProcessFrameTask]: frame->Height() - "<<frame->Height();
-			// DLOG(INFO) << "[ProcessFrameTask]: frame->RenderHeight() - "<<frame->RenderHeight();
 
 			UserInterface::FrameToDisplay toDisplay =
 				{
@@ -506,7 +505,7 @@ namespace fort
 					.VideoOutputDropped = -1UL,
 					.CameraID = frame->CameraID(),
 					
-					/*.RenderHeight = RenderHeight,*/
+					// .RenderHeight = RenderHeight,
 				};
 
 			if (d_videoOutput != nullptr)

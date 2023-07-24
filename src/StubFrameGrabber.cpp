@@ -11,11 +11,11 @@
 namespace fort {
 namespace artemis {
 
-StubFrame::StubFrame(const cv::Mat & mat, uint64_t ID, std::string CameraID, size_t RenderHeight)
+StubFrame::StubFrame(const cv::Mat & mat, uint64_t ID, std::string CameraID)
 	: d_mat(mat.clone())
 	, d_ID(ID)
 	, d_cameraid(CameraID)
-	, d_renderheight(RenderHeight){
+{
 }
 
 StubFrame::~StubFrame() {}
@@ -40,10 +40,6 @@ uint64_t StubFrame::EventCount() const {
 	return d_eventcount;
 }
 
-size_t StubFrame::RenderHeight() const {
-	return d_renderheight;
-}
-
 uint64_t StubFrame::Timestamp() const {
 	return Time().MonotonicValue() / 1000;
 }
@@ -63,15 +59,16 @@ StubFrameGrabber::StubFrameGrabber(const std::vector<std::string> & paths,
 	, d_timestamp(0)
 	, d_period(1.0e9 / options.FPS)
 	, d_cameraid(options.cameraID) 
-	, d_renderheight(options.RenderHeight) {
+{
 
-	if ( paths.empty() == true ) {
+	if ( paths.empty() )
 		throw std::invalid_argument("No paths given to StubFrameGrabber");
-	}
 
 	for ( const auto & p : paths ) {
-
-		d_images.push_back(cv::imread(p,0));
+#ifdef HAVE_OPENCV_CUDACODEC
+#else
+#endif // HAVE_OPENCV_CUDACODEC
+		d_images.push_back(cv::imread(p, cv::IMREAD_GRAYSCALE));
 
 		LOG(INFO) << "[StubFrameGrabber]: Loading frame "<<p;
 
@@ -104,7 +101,7 @@ Frame::Ptr StubFrameGrabber::NextFrame() {
 		usleep(toWait.Microseconds());
 	}
 
-	Frame::Ptr res = std::make_shared<StubFrame>(d_images[d_ID % d_images.size()],d_ID,d_cameraid,d_renderheight);
+	Frame::Ptr res = std::make_shared<StubFrame>(d_images[d_ID % d_images.size()],d_ID,d_cameraid);
 	d_ID += 1;
 	d_last = res->Time();
 	

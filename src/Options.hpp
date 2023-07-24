@@ -38,6 +38,8 @@ struct GeneralOptions {
 struct DisplayOptions {
 	DisplayOptions();
 
+	bool                  NoGUI;  //! Disable GUI
+	// size_t                RenderHeight;  //! Rendering height of OpenCV windows of the triggered cameras
 	std::vector<uint32_t> Highlighted;
 
 	void PopulateParser( options::FlagParser & parser);
@@ -68,6 +70,7 @@ struct VideoOutputOptions {
 	size_t      Height;
 	bool        AddHeader;
 	bool        ToStdout;
+	std::string ToFile;
 };
 
 
@@ -124,9 +127,7 @@ struct CameraOptions {
 	size_t    SlaveHeight;
 	std::string cameraID;
 	bool 		toDisplayFrame = true;
-	size_t		RenderHeight;
 	std::string	  Triggermode = "none";
-	std::string ToFile;
 private:
 	std::string d_strobeDuration,d_strobeDelay;
 };

@@ -53,7 +53,12 @@ std::vector<OBJdetect> detectorV4(std::string pathmodel, cv::Mat frame, torch::D
 
   frame.copyTo(imageBGR);
 
-  cv::cvtColor(imageBGR, imageBGR, cv::COLOR_BGR2RGB);
+  if(imageBGR.channels() == 1) {
+    cv::cvtColor(imageBGR, imageBGR, cv::COLOR_GRAY2RGB);
+  } else {
+    assert(imageBGR.type() == CV_8UC3 && "Color input frames in the BGR (OpenCV-native) format is expected");
+    cv::cvtColor(imageBGR, imageBGR, cv::COLOR_BGR2RGB);
+  }
   imageBGR.convertTo(imageBGR, CV_32FC3, 1.0f / 255.0f);
   auto input_tensor = torch::from_blob(imageBGR.data, {1, imageBGR.rows, imageBGR.cols, 3});
   input_tensor = input_tensor.permute({0, 3, 1, 2}).contiguous();
@@ -333,8 +338,8 @@ std::vector<std::pair<cv::Point2f,uint16_t>> DetectorMotionV2_1(std::string path
       claster_points.push_back(detects.at(i).detect);
       img = framebuf(cv::Range(detects.at(i).detect.y - half_imgsize * koef, detects.at(i).detect.y + half_imgsize * koef), cv::Range(detects.at(i).detect.x - half_imgsize * koef, detects.at(i).detect.x + half_imgsize * koef));
       
-      cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
-      img.convertTo(img, CV_8UC3);
+      // cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
+      // img.convertTo(img, CV_8UC3);
 
       ALObject obj(objects.size(), detects.at(i).type, claster_points, img);
       obj.model_center = detects.at(i).detect;
@@ -421,8 +426,12 @@ std::vector<std::pair<cv::Point2f,uint16_t>> DetectorMotionV2_1(std::string path
   cv::Rect rectb(0, 0, rows, rows);
   imag = imagbuf(rectb);
 
-  cv::cvtColor(imag, imag, cv::COLOR_BGR2RGB);
-  imag.convertTo(imag, CV_8UC3);
+  if(imag.channels() > 1)
+    cv::cvtColor(imag, imag, cv::COLOR_BGR2GRAY);
+  // if(imag.channels() == 1)
+  //   cv::cvtColor(imag, imag, cv::COLOR_GRAY2RGB);
+  // else cv::cvtColor(imag, imag, cv::COLOR_BGR2RGB);
+  // imag.convertTo(imag, CV_8UC3);
 
   if (rows > cols)
   {
@@ -438,14 +447,18 @@ std::vector<std::pair<cv::Point2f,uint16_t>> DetectorMotionV2_1(std::string path
   cv::resize(frame0, frame0, cv::Size(clsize, rwsize), cv::InterpolationFlags::INTER_CUBIC);
   cv::Rect rect0(0, 0, reduseres, reduseres);
   imageBGR0 = frame0(rect0);
-  imageBGR0.convertTo(imageBGR0, CV_8UC1);
+  if(imageBGR0.channels() > 1)
+     cv::cvtColor(imageBGR0, imageBGR0, cv::COLOR_BGR2GRAY);
+  // imageBGR0.convertTo(imageBGR0, CV_8UC1);
 
   cv::resize(frame, frame, cv::Size(clsize, rwsize), cv::InterpolationFlags::INTER_CUBIC);
 
   cv::Rect rect(0, 0, reduseres, reduseres);
   imageBGR = frame(rect);
 
-  imageBGR.convertTo(imageBGR, CV_8UC1);
+  if(imageBGR0.channels() > 1)
+     cv::cvtColor(imageBGR0, imageBGR0, cv::COLOR_BGR2GRAY);
+  // imageBGR.convertTo(imageBGR, CV_8UC1);
 
   cv::Point2f pm;
 
@@ -668,11 +681,12 @@ std::vector<std::pair<cv::Point2f,uint16_t>> DetectorMotionV2_1(std::string path
 
       if (clasters[cls_id].size() > mpcc && newobj == true) // if there are enough moving points
       {
-        framebuf.convertTo(imagbuf, CV_8UC3);
+        // framebuf.convertTo(imagbuf, CV_8UC3);
+        framebuf.copyTo(imagbuf);
 
         img = imagbuf(cv::Range(clastercenter.y - half_imgsize * koef, clastercenter.y + half_imgsize * koef), cv::Range(clastercenter.x - half_imgsize * koef, clastercenter.x + half_imgsize * koef));
-        cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
-        img.convertTo(img, CV_8UC3);
+        // cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
+        // img.convertTo(img, CV_8UC3);
         ALObject obj(objects.size(), "a", clasters[cls_id], img);
         objects.push_back(obj);
         for (size_t j = 0; j < clsobjrs.size(); j++)
@@ -734,10 +748,11 @@ std::vector<std::pair<cv::Point2f,uint16_t>> DetectorMotionV2_1(std::string path
 
       if (clasters[cls].size() > mpcc && newobj == true) // if there are enough moving points
       {
-        framebuf.convertTo(imagbuf, CV_8UC3);
+        // framebuf.convertTo(imagbuf, CV_8UC3);
+        framebuf.copyTo(imagbuf);
         img = imagbuf(cv::Range(clastercenter.y - half_imgsize * koef, clastercenter.y + half_imgsize * koef), cv::Range(clastercenter.x - half_imgsize * koef, clastercenter.x + half_imgsize * koef));
-        cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
-        img.convertTo(img, CV_8UC3);
+        // cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
+        // img.convertTo(img, CV_8UC3);
         ALObject obj(objects.size(), "a", clasters[cls], img);
         objects.push_back(obj);
         clasters.erase(clasters.begin() + cls);
@@ -757,7 +772,8 @@ std::vector<std::pair<cv::Point2f,uint16_t>> DetectorMotionV2_1(std::string path
     if (objects.at(i).det_mc == false && objects.at(i).det_pos == false)
       continue;
 
-    framebuf.convertTo(imagbuf, CV_8UC3);
+    // framebuf.convertTo(imagbuf, CV_8UC3);
+    framebuf.copyTo(imagbuf);
 
     if (objects[i].det_mc == false)
     {
@@ -793,8 +809,8 @@ std::vector<std::pair<cv::Point2f,uint16_t>> DetectorMotionV2_1(std::string path
     // std::cout << "pt2 - " << pt2 << std::endl;
 
     img = imagbuf(cv::Range(pt1.y, pt2.y), cv::Range(pt1.x, pt2.x));
-    cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
-    img.convertTo(img, CV_8UC3);
+    // cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
+    // img.convertTo(img, CV_8UC3);
     img.copyTo(objects[i].img);
     objects[i].center_determine(true);
 

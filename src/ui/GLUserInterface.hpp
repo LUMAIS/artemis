@@ -120,6 +120,8 @@ private:
 	cv::Point      d_currentPOI;
 	cv::Rect       d_ROI;
 
+	uint         d_renderHeight;
+
 	Eigen::Matrix3f d_fullProjection,d_viewProjection,d_roiProjection;
 
 	std::shared_ptr<GLFont> d_labelFont,d_overlayFont,d_watermarkFont;

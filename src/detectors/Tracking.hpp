@@ -1,3 +1,5 @@
+#pragma once
+
 //#include <cuda_provider_factory.h>
 //#include <onnxruntime_cxx_api.h>
 

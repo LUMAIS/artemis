@@ -1,4 +1,5 @@
 #include "Options.hpp"
+#include "fort/time/Time.hpp"
 
 #include <stdexcept>
 
@@ -207,6 +208,12 @@ void DisplayOptions::FinishParse() {
 }
 
 
+std::string formatDuration(const fort::Duration & d ) {
+	std::ostringstream oss;
+	oss << d;
+	return oss.str();
+}
+
 ProcessOptions::ProcessOptions()
 	: FrameStride(1)
 	, FrameID()
@@ -215,7 +222,7 @@ ProcessOptions::ProcessOptions()
 	, AntTraceFile()
 	, NewAntROISize(600)
 	, ImageRenewPeriod(2 * Duration::Hour) {
-	d_imageRenewPeriod = ImageRenewPeriod.ToString();
+	d_imageRenewPeriod = formatDuration(ImageRenewPeriod);
 }
 
 void ProcessOptions::PopulateParser(options::FlagParser & parser) {
@@ -240,11 +247,11 @@ CameraOptions::CameraOptions()
 	, Triggermode("none")
 	, StrobeDuration(1500 * Duration::Microsecond)
 	, StrobeDelay(0) 
-	, SlaveWidth(0)
-	, SlaveHeight(0)
+	, SlaveWidth(0)  // Introduced by Serhii for slave cameras in DF mode
+	, SlaveHeight(0)  // Introduced by Serhii
 {
-	d_strobeDuration = StrobeDuration.ToString();
-	d_strobeDelay = StrobeDelay.ToString();
+	d_strobeDuration = formatDuration(StrobeDuration);
+	d_strobeDelay = formatDuration(StrobeDelay);
 }
 
 void CameraOptions::PopulateParser(options::FlagParser & parser)  {
@@ -385,7 +392,7 @@ void Options::Validate() {
 	}
 #ifdef NDEBUG
 	if ( Process.ImageRenewPeriod < 15 * Duration::Minute ) {
-		throw std::invalid_argument("Image renew period (" + Process.ImageRenewPeriod.ToString() + ") is too small for production of large dataset (minimum: 15m)");
+		throw std::invalid_argument("Image renew period (" + formatDuration(Process.ImageRenewPeriod) + ") is too small for production of large dataset (minimum: 15m)");
 	}
 #endif
 

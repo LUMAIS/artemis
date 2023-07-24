@@ -5,7 +5,10 @@ libtorch_CUDA='https://download.pytorch.org/libtorch/cu111/libtorch-cxx11-abi-sh
 libtorch_path='src/'
 
 #STEP 1 - Installing build environment for artemis (object detection and tracking) ...
-#sudo apt-get install -y libprotobuf-dev protobuf-compiler libopencv-dev libeigen3-dev libgoogle-glog-dev libglfw3-dev libglew-dev libboost-system-dev
+##sudo add-apt-repository -y ppa:maarten-fonville/protobuf
+##sudo apt-get -q update
+#sudo apt-get install -y libprotobuf-dev protobuf-compiler libopencv-dev libopencv-imgproc-dev libopencv-highgui-dev libeigen3-dev libgoogle-glog-dev libglfw3-dev libglew-dev libboost-system-dev
+#sudo apt-get install -y libasio-dev libssl-dev 
 
 #STEP 2 - Installing CUDA
 #Where ${OS} is ubuntu1804 or ubuntu2004. 

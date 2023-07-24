@@ -1,8 +1,8 @@
 build/
+euresys/
+# LAFFTrack-related files
 data/
 src/libtorch/
 src/libtorch_backup/
 src/onnxruntime/
 .vscode/
-.gitignore
-

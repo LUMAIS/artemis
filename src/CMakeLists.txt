@@ -68,7 +68,6 @@ set(SRC_FILES utils/Defer.cpp
 	          utils/StringManipulation.cpp
 	          utils/Partitions.cpp
 	          Task.cpp
-	          Time.cpp
 	          Options.cpp
 	          FrameGrabber.cpp
 	          StubFrameGrabber.cpp
@@ -105,7 +104,6 @@ set(HDR_FILES utils/Defer.hpp
 	          utils/Partitions.hpp
 	          Task.hpp
 	          FrameGrabber.hpp
-	          Time.hpp
 	          Connection.hpp
 	          StubFrameGrabber.hpp
 			  StubVideoGrabber.hpp
@@ -136,7 +134,6 @@ set(UTEST_SRC_FILES main-check.cpp
                     utils/DeferUTest.cpp
                     utils/FlagParserUTest.cpp
                     utils/StringManipulationUTest.cpp
-                    TimeUTest.cpp
 	                ConnectionUTest.cpp
 	                utils/PartitionsUTest.cpp
 	                OptionsUTest.cpp
@@ -148,7 +145,6 @@ set(UTEST_HDR_FILES utils/DeferUTest.hpp
 	                utils/FlagParserUTest.hpp
 	                utils/StringManipulationUTest.hpp
 	                utils/PartitionsUTest.hpp
-	                TimeUTest.hpp
 	                ConnectionUTest.hpp
 	                OptionsUTest.hpp
 	                TaskUTest.hpp
@@ -192,6 +188,7 @@ include_directories(${TORCH_INCLUDE_DIRS})
 add_library(artemis-common STATIC ${SRC_FILES} ${HDR_FILES})
 target_link_libraries(artemis-common ${GLOG_LIBRARIES}
 	                                 ${EGRABBER_LIBRARIES}
+									 fort-time
 	                                 fort-tags
 	                                 fort-hermes-cpp
 	                                 ${PROTOBUF_LIBRARIES}
@@ -203,13 +200,9 @@ target_link_libraries(artemis-common ${GLOG_LIBRARIES}
 	                                 freetype-gl
 	                                 ${FONTCONFIG_LIBRARIES}
 	                                 boost_system
-	                                  "-ldl"
-									  ${ONNX_RUNTIME_LIB}
+	                                 "-ldl"
+									#   ${ONNX_RUNTIME_LIB}
 									)
-
-
-#ADD_LIBRARY(mylib SHARED libtesttorch.cpp)
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_GLIBCXX_USE_CXX11_ABI=0")
 
 ADD_LIBRARY(Trophallaxis SHARED detectors/Trophallaxis.cpp)
 ADD_LIBRARY(Tracking SHARED detectors/Tracking.cpp)

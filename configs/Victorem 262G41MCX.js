@@ -9,8 +9,8 @@ grabber.InterfacePort.set("LineInputToolActivation", "RisingEdge");
 grabber.RemotePort.set("ExposureMode", "Edge_Triggered_Programmable");
 grabber.RemotePort.set("TriggerSource", "CoaXPress_Trigger_Input");
 grabber.RemotePort.set("TriggerEdgeLevel", "Rising_Edge_High_Level");
-grabber.RemotePort.set("Width", 5120);
-grabber.RemotePort.set("Height", 5120);
+grabber.RemotePort.set("Width", 5120);  // ATTENTION: setting this option may cause camera freezing
+grabber.RemotePort.set("Height", 5120);  // ATTENTION: setting this option may cause camera freezing
 //Device
 grabber.DevicePort.set("CameraControlMethod", "RC");
 grabber.DevicePort.set("CycleTriggerSource", "LIN1");

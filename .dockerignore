@@ -1,0 +1,6 @@
+build
+.git
+scripts/resourcify/resourcify
+Dockerfile
+.dockerignore
+.github

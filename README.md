@@ -24,7 +24,7 @@ The built `artemis` with its libs is generated to `build/bin`, transferring ther
 build/bin$ ./artemis -h
 low-level vision detection for the FORmicidae Tracker
 option(s):
-  -t/--ant-tracing-file        : Path where to save new detected ant pictures (default: '')
+  -t/--ant-tracing-file        : Outuput file in the CSV format for the ant tracking (i.e., runs/tacking.ssv) (default: '')
   --at-family                  : The apriltag family to use (default: '')
   --at-label-file              : The path to the label file (default: '')
   --at-quad-critical-radian    : Rejects quad with angle to close to 0 or 180 degrees (default: 0.174533)

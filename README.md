@@ -82,6 +82,7 @@ __Tracking of tagged ants with GUI__
 ```sh
 build/bin$ ./artemis -t runs/trace-Mrubra_6-tagged.ssv --input-video data/video/TaggedAnts/Mrubra_6_ARTag_1dot3mm_test_2496px_10fps_0_MV-CH430-90XM-F-NF_clip.mp4 --at-family 16h5
 ```
+![artemis_tacking_tagged](img/artemis_tacking_tagged_2023-07-25.jpg)
 
 __Tracking of tagged ants without GUI__
 ```sh
@@ -116,9 +117,9 @@ $ head runs/trace-Mrubra_6-tagged.ssv
 18 12 523.72 263.66
 ```
 
-__Marker-less ant detection on CPU__
+__Markerless ant detection on CPU__
 ```sh
-build/bin$ ./artemis --no-gui -t runs/trace-Mrubra_6-markerless.ssv --input-video data/video/TaggedAnts/Mrubra_6_ARTag_1dot3mm_test_2496px_10fps_0_MV-CH430-90XM-F-NF_clip.mp4 --at-trophallaxis-model data/models/AntED_yolo5_traced_992.pt --camera-fps 1
+build/bin$ ./artemis --no-gui -t runs/trace-Mrubra_6-markerless.ssv --input-video data/video/TaggedAnts/Mrubra_6_ARTag_1dot3mm_test_2496px_10fps_0_MV-CH430-90XM-F-NF_clip.mp4 --at-trophallaxis-model data/models/AntED_yolo5_traced_992.pt --camera-fps 2
 ```
 
 ```txt
@@ -137,8 +138,9 @@ $ head runs/trace-Mrubra_6-markerless.ssv
 
 __Marker-less ant tacking on CPU__
 ```sh
-build/bin$ ./artemis --no-gui -t runs/trace-Mrubra_6-markerless_track.ssv --input-video data/video/TaggedAnts/Mrubra_6_ARTag_1dot3mm_test_2496px_10fps_0_MV-CH430-90XM-F-NF_clip.mp4 --at-tracking-model data/models/AntED_yolo5_traced_992.pt --camera-fps 0.2
+build/bin$ ./artemis -t runs/trace-Mrubra_6-markerless_track.ssv --input-video data/video/TaggedAnts/Mrubra_6_ARTag_1dot3mm_test_2496px_10fps_0_MV-CH430-90XM-F-NF_clip.mp4 --at-tracking-model data/models/AntED_yolo5_traced_992.pt --camera-fps 0.25
 ```
+![artemis_tacking_markerless](img/artemis_tacking_markerless-2_2023-07-25.jpg)
 
 ```txt
 $ head runs/trace-Mrubra_6-markerless_track.ssv

@@ -204,13 +204,16 @@ target_link_libraries(artemis-common ${GLOG_LIBRARIES}
 									#   ${ONNX_RUNTIME_LIB}
 									)
 
-ADD_LIBRARY(Trophallaxis SHARED detectors/Trophallaxis.cpp)
-ADD_LIBRARY(Tracking SHARED detectors/Tracking.cpp)
+add_library(Trophallaxis SHARED detectors/Trophallaxis.cpp)
+set_target_properties(Trophallaxis PROPERTIES
+					LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/lib)
+add_library(Tracking SHARED detectors/Tracking.cpp)
+set_target_properties(Tracking PROPERTIES
+					LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin/lib)
 
 add_executable(artemis main.cpp)
 target_link_libraries(artemis artemis-common Trophallaxis ${TORCH_LIBRARIES})
 target_link_libraries(artemis artemis-common Tracking ${TORCH_LIBRARIES})
-
 
 add_check_test(NAME artemis
 	           FILES ${UTEST_SRC_FILES} ${UTEST_HDR_FILES}

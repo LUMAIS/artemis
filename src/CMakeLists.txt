@@ -81,7 +81,7 @@ set(SRC_FILES utils/Defer.cpp
 			  TrackingDetector.cpp
 	          FullFrameExportTask.cpp
 	          UserInterfaceTask.cpp
-	          VideoOutputTask.cpp
+	          VideoStdoutTask.cpp
 	          ImageTextRenderer.cpp
 	          ui/UserInterface.cpp
 	          ui/StubUserInterface.cpp
@@ -115,7 +115,7 @@ set(HDR_FILES utils/Defer.hpp
 			  TrackingDetector.hpp
 	          FullFrameExportTask.hpp
 	          UserInterfaceTask.hpp
-	          VideoOutputTask.hpp
+	          VideoStdoutTask.hpp
 	          ImageTextRenderer.hpp
 	          ui/UserInterface.hpp
 	          ui/StubUserInterface.hpp

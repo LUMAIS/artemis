@@ -1,3 +1,5 @@
+cmake_minimum_required(VERSION 3.16)
+
 cmake_policy(SET CMP0048 NEW)
 cmake_policy(SET CMP0077 NEW)
 set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
@@ -5,7 +7,19 @@ set(CMAKE_POLICY_DEFAULT_CMP0077 NEW)
 project(artemis VERSION 0.4.5
 	LANGUAGES C CXX)
 
-cmake_minimum_required(VERSION 3.16)
+find_package(Git)
+if(GIT_FOUND)
+    execute_process(
+        COMMAND git describe --always --dirty=+ --broken=-
+        # PROJECT_SOURCE_DIR
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        OUTPUT_VARIABLE GIT_SRC_VERSION
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+    message(STATUS GIT_SRC_VERSION="${GIT_SRC_VERSION}")
+    # Transfer some definitions to the source code
+    add_definitions(-DGIT_SRC_VERSION="${GIT_SRC_VERSION}")
+endif(GIT_FOUND)
 
 # ATTENTION: Default location of FORT libs should not changed, otherwise linking should be modified as well
 # set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)

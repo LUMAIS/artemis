@@ -45,9 +45,8 @@ protected:
 private:
     typedef std::chrono::high_resolution_clock clock;
     typedef clock::time_point time;
-    // std::vector<cv::Mat> d_images;
     cv::Mat              d_frame;
-    uint64_t             d_ID,d_timestamp,d_eventcount;
+    uint64_t             d_ID, d_timestamp, d_eventcount;
     Time                 d_last;
     Duration             d_period;
     std::string			 d_cameraid;
@@ -55,7 +54,6 @@ private:
     cv::VideoCapture     d_cap;
     mutable bool         d_convFrame;  //! Whether the frame format conversion is required
 };
-
 
 } // namespace artemis
 } // namespace fort

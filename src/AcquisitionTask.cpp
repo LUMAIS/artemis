@@ -129,6 +129,11 @@ namespace fort
 
 		AcquisitionTask::~AcquisitionTask() {}
 
+		ProcessFrameTaskPtr& AcquisitionTask::process()
+		{
+			return d_processFrame;
+		}
+
 		void AcquisitionTask::Stop()
 		{
 			d_quit.store(true);

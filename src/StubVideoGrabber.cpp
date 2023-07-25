@@ -31,6 +31,7 @@ StubVideoGrabber::StubVideoGrabber(const std::string & path,
 
 	// Note: video processing expects grayscale frames, so it is better to convert the frames at once if necessary
 	d_convFrame = d_cap.get(cv::CAP_PROP_FORMAT) != CV_8UC1;
+	// Ensure that !d_convFrame is actual
 	if(!d_convFrame) {
 		cv::Mat framebuf;
 		if (d_cap.read(framebuf)) {
@@ -48,6 +49,7 @@ StubVideoGrabber::StubVideoGrabber(const std::string & path,
 		} else LOG(WARNING) << "[StubVideoGrabber]: Failed to extract the initial frame";
 	}
 
+	// Capture the first frame
 	captureFrame();
 
 	LOG(INFO) << "[StubVideoGrabber]: The first video frame is extracted successfully";

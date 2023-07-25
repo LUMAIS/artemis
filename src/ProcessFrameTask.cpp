@@ -15,7 +15,7 @@
 #include "TrophallaxisDetector.hpp"
 #include "TrackingDetector.hpp"
 #include "FullFrameExportTask.hpp"
-#include "VideoOutputTask.hpp"
+#include "VideoStdoutTask.hpp"
 #include "UserInterfaceTask.hpp"
 
 #include <glog/logging.h>
@@ -59,7 +59,7 @@ namespace fort
 			LOG(INFO) << "Processing Stride: " << options.Process.FrameStride;
 		}
 
-		VideoOutputTaskPtr ProcessFrameTask::VideoOutputTask() const
+		VideoOutputTaskPtr ProcessFrameTask::VideoStdoutTask() const
 		{
 			return d_videoOutput;
 		}
@@ -82,7 +82,7 @@ namespace fort
 			{
 				return;
 			}
-			d_videoOutput = std::make_shared<artemis::VideoOutputTask>(options, context, legacyMode);
+			d_videoOutput = std::make_shared<artemis::VideoStdoutTask>(options, context, legacyMode);
 		}
 
 		void ProcessFrameTask::SetUpDetection(const cv::Size &inputResolution,

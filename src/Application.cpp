@@ -12,7 +12,7 @@
 #include "AcquisitionTask.hpp"
 #include "ProcessFrameTask.hpp"
 #include "FullFrameExportTask.hpp"
-#include "VideoOutputTask.hpp"
+#include "VideoStdoutTask.hpp"
 #include "UserInterfaceTask.hpp"
 #include <thread>
 
@@ -20,8 +20,6 @@ namespace fort
 {
 	namespace artemis
 	{
-		uint8_t ncams = 1;
-
 		void Application::applicationrun(const Options &options, bool UITask)
 		{
 			Application application(options);
@@ -75,7 +73,12 @@ namespace fort
 		{
 			if (options.General.PrintVersion == true)
 			{
-				std::cout << "artemis v" << ARTEMIS_VERSION << std::endl;
+				std::cout << "artemis v" << ARTEMIS_VERSION
+// GIT_SRC_VERSION (a custom macro definition) might be defined by CMAKE or another build tool
+#ifdef GIT_SRC_VERSION
+					<< " (" << GIT_SRC_VERSION << ")"
+#endif // GIT_SRC_VERSION
+				<< std::endl;
 				return true;
 			}
 
@@ -138,40 +141,43 @@ namespace fort
 			std::shared_ptr<FrameGrabber>  grabber = AcquisitionTask::LoadFrameGrabber(options.General.StubImagePaths, options.General.inputVideoPath, options.Camera, options.VideoOutput);
 
 			// Define processing tasks per each grabber interface
-			d_process = std::make_shared<ProcessFrameTask>(options, d_context, grabber->Resolution());
-			d_acquisition = std::make_shared<AcquisitionTask>(grabber, d_process);
+			d_tasks.push_back(std::make_shared<AcquisitionTask>(grabber,
+				std::make_shared<ProcessFrameTask>(options, d_context, grabber->Resolution()))
+			);
 		}
 
 		void Application::SpawnTasks(bool UITask)
 		{
-
-			if (d_process->FullFrameExportTask())
+			for(auto& task: d_tasks)
 			{
-				d_threads.push_back(Task::Spawn(*d_process->FullFrameExportTask(),
-#ifdef HAVE_OPENCV_CUDACODEC
-					1
-#else
-					20
-#endif // HAVE_OPENCV_CUDACODEC
-				));
-			}
-
-			if (d_process->VideoOutputTask())
-			{
-				d_threads.push_back(Task::Spawn(*d_process->VideoOutputTask(), 0));
-			}
-
-			if (UITask)
-			{
-				if (d_process->UserInterfaceTask())
+				if (task->process()->FullFrameExportTask())
 				{
-					d_threads.push_back(Task::Spawn(*d_process->UserInterfaceTask(), 1));
+					d_threads.push_back(Task::Spawn(*task->process()->FullFrameExportTask(),
+	#ifdef HAVE_OPENCV_CUDACODEC
+						1
+	#else
+						20
+	#endif // HAVE_OPENCV_CUDACODEC
+					));
 				}
-			}
-			
 
-			d_threads.push_back(Task::Spawn(*d_process, 0));
-			d_threads.push_back(Task::Spawn(*d_acquisition, 0));
+				if (task->process()->VideoStdoutTask())
+				{
+					d_threads.push_back(Task::Spawn(*task->process()->VideoStdoutTask(), 0));
+				}
+
+				if (UITask)
+				{
+					if (task->process()->UserInterfaceTask())
+					{
+						d_threads.push_back(Task::Spawn(*task->process()->UserInterfaceTask(), 1));
+					}
+				}
+				
+				// Schedule frame processing and acquisition (grabbing) tasks
+				d_threads.push_back(Task::Spawn(*task->process(), 0));
+				d_threads.push_back(Task::Spawn(*task, 0));
+			}
 		}
 
 		void Application::JoinTasks()
@@ -191,20 +197,21 @@ namespace fort
 		{
 			// putting a wait on SIGINT will ensure that the context remains
 			// active throughout execution.
-			d_signals.async_wait([this](const boost::system::error_code &,
-										int)
-								 {
+			d_signals.async_wait([this](const boost::system::error_code &, int)
+								{
 									 LOG(INFO) << "Terminating (SIGINT)";
 
-									 for (uint8_t i = 0; i < ncams; i++)
-									 	d_acquisition->Stop(); });
+									 for (auto& task: d_tasks)
+									 	task->Stop();
+								});
 			// starts the context in a single threads, and remind to join it
 			// once we got the SIGINT
 			d_ioThread = std::thread([this]()
-									 {
-		                         LOG(INFO) << "[IOTask]: started";
-		                         d_context.run();
-		                         LOG(INFO) << "[IOTask]: ended"; });
+								{
+									LOG(INFO) << "[IOTask]: started";
+									d_context.run();
+									LOG(INFO) << "[IOTask]: ended";
+								});
 		}
 
 		void Application::Run(bool UITask)

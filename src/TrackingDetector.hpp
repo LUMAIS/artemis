@@ -15,7 +15,7 @@ namespace artemis {
 class TrackingDetector{
 public :
 
-	std::vector<cv::Mat> frames;
+	cv::Mat framePrev;
 	uint32_t id_frame = 0;
 
 	TrackingDetector(size_t maxParallel, const cv::Size & size, const TrackingOptions & options);

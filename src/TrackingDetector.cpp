@@ -71,15 +71,11 @@ namespace fort
 
 			// DLOG(INFO) << "[TrackingDetector]: DeviceType - " << device_type;
 
-			frames.push_back(image);
-
-			id_frame++;
-
-			if (frames.size() > 1)
-			{
-				detects = DetectorMotionV2_1(trackingmodel, device_type, frames.at(0), frames.at(1), objects, id_frame, usemodel);
-				frames.erase(frames.begin());
-			}
+			detects = framePrev.empty()
+				? DetectorMotionV2_1(trackingmodel, device_type, image, image, objects, id_frame, usemodel)
+				: DetectorMotionV2_1(trackingmodel, device_type, framePrev, image, objects, id_frame, usemodel);
+			framePrev = image;
+			++id_frame;
 
 			for (uint16_t i = 0; i < detects.size(); i++)
 			{

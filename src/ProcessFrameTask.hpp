@@ -25,8 +25,8 @@ class Mat;
 namespace fort {
 namespace artemis {
 
-class VideoOutputTask;
-typedef std::shared_ptr<VideoOutputTask>     VideoOutputTaskPtr;
+class VideoStdoutTask;
+typedef std::shared_ptr<VideoStdoutTask>     VideoOutputTaskPtr;
 class UserInterfaceTask;
 typedef std::shared_ptr<UserInterfaceTask>   UserInterfaceTaskPtr;
 class Connection;
@@ -56,7 +56,7 @@ public:
 	void QueueFrame( const Frame::Ptr & );
 	void CloseFrameQueue();
 
-	VideoOutputTaskPtr     VideoOutputTask() const;
+	VideoOutputTaskPtr     VideoStdoutTask() const;
 	UserInterfaceTaskPtr   UserInterfaceTask() const;
 	FullFrameExportTaskPtr FullFrameExportTask() const;
 

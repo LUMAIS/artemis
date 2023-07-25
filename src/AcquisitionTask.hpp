@@ -31,6 +31,8 @@ public:
 
 	void Stop();
 
+	ProcessFrameTaskPtr& process();
+
 private:
 
 	FrameGrabber::Ptr   d_grabber;
